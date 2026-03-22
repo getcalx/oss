@@ -190,8 +190,7 @@ class TestHookRoundTrip:
         r_end = _invoke(runner, ["_hook", "session-end"])
         assert r_end.exit_code == 0
         # Should mention pending corrections
-        data = json.loads(r_end.output)
-        assert "2 corrections pending distillation" in data["followup_message"]
+        assert "2 corrections pending distillation" in r_end.output
 
         # Start new session
         r_start = _invoke(runner, ["_hook", "session-start"])
@@ -367,12 +366,12 @@ class TestMultiDomain:
         r = _invoke(runner, ["_hook", "session-start"])
         assert r.exit_code == 0
         assert "CALX RULES" in r.output
-        assert "api (1 rules)" in r.output
-        assert "frontend (1 rules)" in r.output
+        assert "api (1 rule)" in r.output
+        assert "frontend (1 rule)" in r.output
         assert "api-R001" in r.output
         assert "frontend-R001" in r.output
         # Alphabetical order: api before frontend
-        assert r.output.index("api (1 rules)") < r.output.index("frontend (1 rules)")
+        assert r.output.index("api (1 rule)") < r.output.index("frontend (1 rule)")
 
     def test_multi_domain_health_coverage(
         self, tmp_path: Path, monkeypatch

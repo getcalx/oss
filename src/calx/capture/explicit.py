@@ -13,6 +13,7 @@ def capture_explicit(
     message: str,
     domain: str | None = None,
     correction_type: str = "process",
+    context: str = "",
 ) -> tuple[CorrectionState, str]:
     """Capture an explicit correction and return (correction, feedback).
 
@@ -30,6 +31,7 @@ def capture_explicit(
         domain=resolved_domain,
         description=message,
         correction_type=correction_type,
+        context=context,
         source="explicit",
     )
 

@@ -50,7 +50,9 @@ def promote(calx_dir: Path, chain: RecurrenceChain) -> Rule:
     4. Log promotion event
     """
     # Most recent correction has the clearest description (refined through repetition)
-    latest = chain.corrections[-1] if chain.corrections else chain.corrections[0]
+    if not chain.corrections:
+        raise ValueError(f"Cannot promote chain {chain.original_id}: no corrections")
+    latest = chain.corrections[-1]
     title = latest.description[:80]  # Truncate if very long
 
     rule_id = next_rule_id(calx_dir, chain.domain)

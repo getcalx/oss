@@ -37,12 +37,22 @@ def config_cmd(show: bool, key_value: tuple[str, str] | None):
 
 def _set_config(calx_dir, config, key, value):
     """Set a single config value."""
-    if key == "promotion_threshold":
-        config.promotion_threshold = int(value)
-    elif key == "max_prompts_per_session":
-        config.max_prompts_per_session = int(value)
-    elif key == "staleness_days":
-        config.staleness_days = int(value)
+    int_keys = {
+        "promotion_threshold": (1, 100),
+        "max_prompts_per_session": (1, 50),
+        "staleness_days": (1, 365),
+    }
+    if key in int_keys:
+        lo, hi = int_keys[key]
+        try:
+            parsed = int(value)
+        except ValueError:
+            click.echo(f"Invalid value for {key}: must be an integer", err=True)
+            return
+        if parsed < lo or parsed > hi:
+            click.echo(f"Invalid value for {key}: must be between {lo} and {hi}", err=True)
+            return
+        setattr(config, key, parsed)
     elif key == "agent_naming":
         if value not in ("self", "developer", "none"):
             click.echo("Invalid value. Must be: self, developer, none", err=True)

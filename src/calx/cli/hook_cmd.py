@@ -32,11 +32,15 @@ def hook_session_start():
     if not calx_dir:
         return  # not a Calx project, exit silently
 
+    # 0. Remove clean-exit marker FIRST — if we crash mid-startup,
+    # next session should see a dirty exit, not a false clean.
+    exit_status = check_clean_exit(calx_dir)
+    remove_clean_exit(calx_dir)
+
     config = load_config(calx_dir)
     output_parts: list[str] = []
 
     # 1. Dirty exit check
-    exit_status = check_clean_exit(calx_dir)
     if not exit_status.was_clean:
         output_parts.append(
             "WARNING: Previous session did not exit cleanly. "
@@ -60,7 +64,8 @@ def hook_session_start():
         output_parts.append("--- CALX RULES (read before working) ---")
         for domain_name in sorted({r.domain for r in all_rules}):
             domain_rules = [r for r in all_rules if r.domain == domain_name]
-            output_parts.append(f"\n## {domain_name} ({len(domain_rules)} rules)")
+            rule_word = "rule" if len(domain_rules) == 1 else "rules"
+            output_parts.append(f"\n## {domain_name} ({len(domain_rules)} {rule_word})")
             for rule in domain_rules:
                 output_parts.append(format_rule_block(rule))
         output_parts.append("--- END CALX RULES ---")
@@ -129,9 +134,6 @@ def hook_session_start():
         "--- END TOKEN DISCIPLINE ---"
     )
 
-    # 8. Remove stale clean-exit marker, write fresh session start
-    remove_clean_exit(calx_dir)
-
     # Output everything
     if output_parts:
         click.echo("\n".join(output_parts))
@@ -151,6 +153,7 @@ def hook_session_end():
         result = subprocess.run(
             ["git", "status", "--porcelain"],
             capture_output=True, text=True, timeout=10,
+            cwd=str(calx_dir.parent),
         )
         if result.stdout.strip():
             output_parts.append(
@@ -177,4 +180,4 @@ def hook_session_end():
     write_clean_exit(calx_dir)
 
     if output_parts:
-        click.echo(json.dumps({"followup_message": "\n".join(output_parts)}))
+        click.echo("\n".join(output_parts))

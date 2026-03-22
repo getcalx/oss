@@ -108,7 +108,7 @@ def test_session_start_rule_injection(tmp_path: Path, monkeypatch: object) -> No
     result = runner.invoke(test_cli, ["_hook", "session-start"])
     assert result.exit_code == 0
     assert "CALX RULES" in result.output
-    assert "api (1 rules)" in result.output
+    assert "api (1 rule)" in result.output
     assert "api-R001" in result.output
     assert "Always validate input" in result.output
 
@@ -134,8 +134,8 @@ def test_session_start_multiple_domains(tmp_path: Path, monkeypatch: object) -> 
     runner = CliRunner()
     result = runner.invoke(test_cli, ["_hook", "session-start"])
     assert result.exit_code == 0
-    assert "api (1 rules)" in result.output
-    assert "frontend (1 rules)" in result.output
+    assert "api (1 rule)" in result.output
+    assert "frontend (1 rule)" in result.output
     # api should appear before frontend (sorted)
     assert result.output.index("api") < result.output.index("frontend")
 
@@ -267,7 +267,7 @@ def test_session_end_writes_clean_exit(tmp_path: Path, monkeypatch: object) -> N
 
 
 def test_session_end_undistilled_message(tmp_path: Path, monkeypatch: object) -> None:
-    """Reports undistilled corrections in followup_message."""
+    """Reports undistilled corrections."""
     project = _setup_calx_project(tmp_path, ["api"])
     calx_dir = project / ".calx"
     create_correction(calx_dir, domain="api", description="fix X")
@@ -276,8 +276,7 @@ def test_session_end_undistilled_message(tmp_path: Path, monkeypatch: object) ->
     runner = CliRunner()
     result = runner.invoke(test_cli, ["_hook", "session-end"])
     assert result.exit_code == 0
-    data = json.loads(result.output)
-    assert "1 corrections pending distillation" in data["followup_message"]
+    assert "1 corrections pending distillation" in result.output
 
 
 def test_session_end_no_output_when_clean(tmp_path: Path, monkeypatch: object) -> None:
@@ -319,8 +318,7 @@ def test_session_end_uncommitted_changes(tmp_path: Path, monkeypatch: object) ->
     runner = CliRunner()
     result = runner.invoke(test_cli, ["_hook", "session-end"])
     assert result.exit_code == 0
-    data = json.loads(result.output)
-    assert "Uncommitted changes" in data["followup_message"]
+    assert "Uncommitted changes" in result.output
 
 
 def test_session_end_stats_not_posted_when_not_opted_in(

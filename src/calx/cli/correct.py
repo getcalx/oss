@@ -40,6 +40,7 @@ def correct(
         message,
         domain=domain,
         correction_type=correction_type,
+        context=context,
     )
 
     if as_json:
