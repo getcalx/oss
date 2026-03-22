@@ -7,7 +7,6 @@ import os
 from pathlib import Path
 
 from calx.hooks.installer import (
-    InstallResult,
     _extract_commands,
     _merge_hooks,
     install_hooks,

@@ -8,7 +8,6 @@ from calx.core.corrections import (
     CorrectionEvent,
     append_event,
     create_correction,
-    materialize,
     read_events,
 )
 from calx.distillation.recurrence import (

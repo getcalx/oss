@@ -8,7 +8,7 @@ import click
 from click.testing import CliRunner
 
 from calx.cli.correct import correct
-from calx.core.config import CalxConfig, default_config, save_config
+from calx.core.config import default_config, save_config
 
 
 @click.group()

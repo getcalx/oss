@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from datetime import date
 from pathlib import Path
 
 
@@ -29,7 +28,7 @@ class Rule:
     body: str
 
 
-_RULE_PATTERN = re.compile(r"^### ([a-z]+-R\d{3}): (.+)$", re.MULTILINE)
+_RULE_PATTERN = re.compile(r"^### ([a-z]+-R\d{3,}): (.+)$", re.MULTILINE)
 _META_PATTERN = re.compile(
     r"Source:\s*(.+?)\s*\|\s*Added:\s*(\S+)\s*\|\s*Status:\s*(\w+)\s*\|\s*Type:\s*(\w+)"
 )

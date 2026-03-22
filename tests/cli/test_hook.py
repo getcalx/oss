@@ -1,16 +1,14 @@
 """Tests for calx.cli.hook_cmd — session-start and session-end."""
 from __future__ import annotations
 
-import json
-from datetime import datetime, timezone
 from pathlib import Path
 
 import click
 from click.testing import CliRunner
 
 from calx.cli.hook_cmd import hook_group
-from calx.core.config import CalxConfig, default_config, save_config
-from calx.core.corrections import CorrectionEvent, append_event, create_correction
+from calx.core.config import default_config, save_config
+from calx.core.corrections import create_correction
 from calx.core.rules import Rule, write_rule
 from calx.core.state import write_clean_exit
 

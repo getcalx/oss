@@ -30,6 +30,7 @@ def config_cmd(show: bool, key_value: tuple[str, str] | None):
         click.echo(f"  Max prompts/session: {config.max_prompts_per_session}")
         click.echo(f"  Staleness days: {config.staleness_days}")
         click.echo(f"  Stats opt-in: {config.stats_opt_in}")
+        click.echo(f"  Phone home: {config.phone_home}")
         td = config.token_discipline
         click.echo(f"  Token soft cap: {td.soft_cap:,}")
         click.echo(f"  Token ceiling: {td.ceiling:,}")
@@ -60,6 +61,8 @@ def _set_config(calx_dir, config, key, value):
         config.agent_naming = value
     elif key == "stats_opt_in":
         config.stats_opt_in = value.lower() in ("true", "1", "yes")
+    elif key == "phone_home":
+        config.phone_home = value.lower() in ("true", "1", "yes")
     else:
         click.echo(f"Unknown config key: {key}", err=True)
         return

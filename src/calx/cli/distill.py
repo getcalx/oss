@@ -55,7 +55,7 @@ def _run_promotion(calx_dir, config):
             click.echo(f"  -> Created rule {rule.id}: {rule.title}\n")
         else:
             reject_promotion(calx_dir, candidate.chain.original_id)
-            click.echo(f"  -> Skipped. Will resurface if it keeps recurring.\n")
+            click.echo("  -> Skipped. Will resurface if it keeps recurring.\n")
 
 
 def _run_review(calx_dir):

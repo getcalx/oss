@@ -47,9 +47,10 @@ calx health score
 ```
 .calx/
 ├── calx.json              # Configuration
-├── corrections.jsonl       # Append-only event log (never rewritten)
+├── .gitignore              # Tracks what to commit vs ignore
+├── corrections.jsonl       # Append-only event log (local, gitignored)
 ├── rules/
-│   └── {domain}.md         # Promoted rules per domain
+│   └── {domain}.md         # Promoted rules per domain (committed)
 ├── health/
 │   ├── state.json          # Health scores
 │   └── .last_clean_exit    # Session state marker
@@ -70,7 +71,7 @@ calx health score
 **Hook-based orchestration:**
 - `session-start` -- Rule injection, dirty exit check, effectiveness signal, token discipline
 - `session-end` -- Uncommitted changes check, undistilled reminder, clean exit marker
-- `orientation-gate` / `collapse-guard` -- Pure bash PreToolUse hooks (no Python on the hot path)
+- `orientation-gate` / `collapse-guard` -- Pure bash PreToolUse hooks (no Python on the hot path). `collapse-guard` uses `jq` if available (falls back silently without it)
 
 ## Commands
 
@@ -81,7 +82,7 @@ calx health score
 | `calx status` | Show project status |
 | `calx distill` | Promote recurring corrections to rules |
 | `calx config` | View or modify configuration |
-| `calx health` | Health analysis (score, conflicts, staleness, dedup, coverage) |
+| `calx health` | Health analysis (score, conflicts, staleness, dedup, coverage, conversion) |
 | `calx dispatch` | Generate dispatch prompt for a domain agent |
 | `calx stats` | Show local metrics |
 

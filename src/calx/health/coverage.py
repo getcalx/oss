@@ -58,7 +58,10 @@ def check_coverage(calx_dir: Path) -> CoverageReport:
     for corr in corrections:
         for rule_id in corr.distilled_to:
             if rule_id not in rule_ids:
-                gaps.append(f"Correction {corr.id} distilled to rule {rule_id} which does not exist")
+                gaps.append(
+                    f"Correction {corr.id} distilled to rule "
+                    f"{rule_id} which does not exist"
+                )
 
     return CoverageReport(
         total_corrections=len(corrections),

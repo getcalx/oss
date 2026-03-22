@@ -5,8 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from calx.core.config import load_config
-from calx.core.rules import Rule, read_rules, format_rule_block
-
+from calx.core.rules import Rule, format_rule_block, read_rules
 
 _DEFAULT_PROHIBITIONS = [
     "Do NOT commit",

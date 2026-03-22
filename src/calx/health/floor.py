@@ -37,7 +37,10 @@ def get_trajectory(calx_dir: Path) -> FloorTrajectory:
     total = len(history)
 
     if total == 0:
-        return FloorTrajectory(current_rate=0.0, trend="declining", is_at_floor=False, total_sessions=0)
+        return FloorTrajectory(
+            current_rate=0.0, trend="declining",
+            is_at_floor=False, total_sessions=0,
+        )
 
     window = 5
     recent = history[-window:] if len(history) >= window else history
@@ -52,7 +55,12 @@ def get_trajectory(calx_dir: Path) -> FloorTrajectory:
         newer = history[total // 2:]
         old_avg = sum(h["corrections"] for h in older) / len(older) if older else 0
         new_avg = sum(h["corrections"] for h in newer) / len(newer) if newer else 0
-        trend = "declining" if new_avg < old_avg else "increasing" if new_avg > old_avg else "plateau"
+        if new_avg < old_avg:
+            trend = "declining"
+        elif new_avg > old_avg:
+            trend = "increasing"
+        else:
+            trend = "plateau"
     else:
         trend = "declining"
 

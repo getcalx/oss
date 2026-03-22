@@ -107,6 +107,17 @@ def init(domains: tuple[str, ...], non_interactive: bool, no_phone_home: bool):
     # Save config
     save_config(calx_dir, config)
 
+    # .gitignore for .calx/ — corrections and health state are local
+    gitignore = calx_dir / ".gitignore"
+    gitignore.write_text(
+        "# Commit: calx.json, rules/, method/, README\n"
+        "# Ignore: local state and event logs\n"
+        "corrections.jsonl\n"
+        "health/\n"
+        "hooks/\n",
+        encoding="utf-8",
+    )
+
     # Generate README
     readme_content = generate_calx_readme(domain_list)
     (calx_dir / "README").write_text(readme_content, encoding="utf-8")
@@ -159,11 +170,13 @@ def init(domains: tuple[str, ...], non_interactive: bool, no_phone_home: bool):
         )
 
     # Summary
-    click.echo(f"\nCalx initialized!")
+    click.echo("\nCalx initialized!")
     click.echo(f"  Domains: {', '.join(domain_list)}")
-    click.echo(f"  Hooks: {len(result.hooks_installed)} installed, {len(result.hooks_skipped)} skipped")
+    installed = len(result.hooks_installed)
+    skipped = len(result.hooks_skipped)
+    click.echo(f"  Hooks: {installed} installed, {skipped} skipped")
     click.echo(f"  Seed rule: {seed_rule.id}")
-    click.echo(f"\nRun `calx status` to see your setup.")
+    click.echo("\nRun `calx status` to see your setup.")
 
 
 def _detect_domains(project_dir: Path) -> list[str]:

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from calx.core.corrections import CorrectionState
-from calx.distillation.similarity import STOPWORDS, _extract_keywords, find_most_similar
+from calx.distillation.similarity import _extract_keywords, find_most_similar
 
 
 def _make_correction(cid: str, description: str, domain: str = "api") -> CorrectionState:

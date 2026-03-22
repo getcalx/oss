@@ -49,7 +49,7 @@ def _make_cli():
 
 def test_dispatch_generates_prompt(tmp_path: Path, monkeypatch):
     """Generates dispatch prompt with domain."""
-    calx_dir = _setup_calx(tmp_path)
+    _setup_calx(tmp_path)
     monkeypatch.chdir(tmp_path)
 
     runner = CliRunner()

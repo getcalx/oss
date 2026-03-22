@@ -7,15 +7,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import click
 from click.testing import CliRunner
 
 from calx.cli.main import cli
-from calx.core.config import CalxConfig, default_config, load_config, save_config
-from calx.core.corrections import materialize
+from calx.core.config import default_config, save_config
 from calx.core.rules import read_all_rules
 from calx.core.state import write_clean_exit
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -178,7 +175,6 @@ class TestHookRoundTrip:
     ) -> None:
         """Corrections logged between session-end and session-start show up in status."""
         project = _setup_project(tmp_path, ["api"])
-        calx_dir = project / ".calx"
         monkeypatch.chdir(project)
         runner = CliRunner()
 

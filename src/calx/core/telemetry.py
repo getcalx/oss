@@ -1,14 +1,18 @@
-"""Anonymous stats payload construction and POST for Calx."""
+"""Anonymous stats payload construction and POST for Calx.
+
+This module handles the ``calx stats --share`` flow (synchronous, user-initiated).
+For background telemetry events, see :mod:`calx.core.phone_home`.
+"""
 
 from __future__ import annotations
 
 import json
-import urllib.request
 import urllib.error
+import urllib.request
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-STATS_ENDPOINT = "https://calx.sh/api/stats"
+STATS_ENDPOINT = "https://calx.sh/api/v1/events"
 
 
 @dataclass

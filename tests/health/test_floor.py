@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from calx.core.state import load_state, save_state, HealthState
+from calx.core.state import load_state, save_state
 from calx.health.floor import FloorTrajectory, get_trajectory, record_session
 
 

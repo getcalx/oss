@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from calx.core.rules import Rule
-from calx.health.conflicts import Conflict, _extract_polarity, detect_conflicts
+from calx.health.conflicts import _extract_polarity, detect_conflicts
 
 
 def _make_rule(rule_id: str = "api-R001", title: str = "Test rule", body: str = "") -> Rule:

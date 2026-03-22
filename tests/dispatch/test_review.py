@@ -5,7 +5,6 @@ from pathlib import Path
 from calx.core.config import CalxConfig, save_config
 from calx.core.rules import Rule, write_rule
 from calx.dispatch.review import (
-    ReviewSuggestion,
     generate_review_dispatch,
     suggest_reviewer,
 )

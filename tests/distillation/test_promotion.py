@@ -8,18 +8,17 @@ from calx.core.corrections import (
     CorrectionEvent,
     append_event,
     create_correction,
-    materialize,
+)
+from calx.core.corrections import (
     read_events as read_correction_events,
 )
 from calx.core.events import read_events as read_general_events
 from calx.core.rules import read_rules
 from calx.distillation.promotion import (
-    format_promotion_prompt,
     get_pending_promotions,
     promote,
     reject_promotion,
 )
-from calx.distillation.recurrence import get_promotion_candidates
 
 
 def _setup_chain(calx_dir: Path, count: int = 3) -> tuple:

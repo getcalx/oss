@@ -22,10 +22,13 @@ class CalxConfig:
 
     schema_version: str = "1.0"
     install_id: str = ""
+    anonymous_id: str = ""
     domains: list[str] = field(default_factory=list)
     agent_naming: str = "self"  # "self" | "developer" | "none"
     token_discipline: TokenDiscipline = field(default_factory=TokenDiscipline)
     stats_opt_in: bool = False
+    phone_home: bool = True
+    api_url: str = "https://calx.sh/api/v1/events"
     referral_source: str = ""  # "paper" | "colleague" | "github" | "social" | "other"
     staleness_days: int = 30
     promotion_threshold: int = 3
@@ -56,10 +59,13 @@ def load_config(calx_dir: Path) -> CalxConfig:
     return CalxConfig(
         schema_version=data.get("schema_version", "1.0"),
         install_id=data.get("install_id", ""),
+        anonymous_id=data.get("anonymous_id", ""),
         domains=data.get("domains", []),
         agent_naming=data.get("agent_naming", "self"),
         token_discipline=td,
         stats_opt_in=data.get("stats_opt_in", False),
+        phone_home=data.get("phone_home", True),
+        api_url=data.get("api_url", "https://calx.sh/api/v1/events"),
         referral_source=data.get("referral_source", ""),
         staleness_days=data.get("staleness_days", 30),
         promotion_threshold=data.get("promotion_threshold", 3),
@@ -77,13 +83,15 @@ def save_config(calx_dir: Path, config: CalxConfig) -> None:
     )
 
 
-def default_config(domains: list[str]) -> CalxConfig:
+def default_config(domains: list[str], *, phone_home: bool = True) -> CalxConfig:
     """Create a default configuration with the given domains."""
     from calx.core.ids import generate_uuid
 
     return CalxConfig(
         install_id=generate_uuid(),
+        anonymous_id=generate_uuid(),
         domains=domains,
+        phone_home=phone_home,
     )
 
 

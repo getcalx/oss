@@ -6,9 +6,9 @@ from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from pathlib import Path
 
-from calx.core.corrections import CorrectionEvent, CorrectionState, append_event, materialize
+from calx.core.corrections import CorrectionEvent, append_event
 from calx.core.events import Event, log_event
-from calx.core.rules import Rule, write_rule, next_rule_id
+from calx.core.rules import Rule, next_rule_id, write_rule
 from calx.distillation.recurrence import RecurrenceChain, get_promotion_candidates
 
 

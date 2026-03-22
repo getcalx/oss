@@ -155,6 +155,40 @@ def coverage(as_json: bool):
 
 @health.command()
 @click.option("--json", "as_json", is_flag=True)
+def conversion(as_json: bool):
+    """Surface process rules that should become architectural fixes."""
+    calx_dir = find_calx_dir()
+    if not calx_dir:
+        click.echo("Not a Calx project.", err=True)
+        raise SystemExit(1)
+    from calx.health.conversion import find_conversion_candidates
+
+    candidates = find_conversion_candidates(calx_dir)
+    if as_json:
+        click.echo(
+            json.dumps(
+                [
+                    {
+                        "rule_id": c.rule_id,
+                        "domain": c.domain,
+                        "recurrence_count": c.recurrence_count,
+                        "correction_ids": c.correction_ids,
+                        "message": c.message,
+                    }
+                    for c in candidates
+                ],
+                indent=2,
+            )
+        )
+    elif candidates:
+        for c in candidates:
+            click.echo(f"  {c.rule_id} ({c.domain}): {c.message}")
+    else:
+        click.echo("No conversion candidates found.")
+
+
+@health.command()
+@click.option("--json", "as_json", is_flag=True)
 def dedup(as_json: bool):
     """Find near-duplicate rules."""
     calx_dir = find_calx_dir()

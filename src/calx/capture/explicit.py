@@ -38,8 +38,8 @@ def capture_explicit(
     # Try recurrence check — distillation module may not exist yet
     feedback = f"Logged as {correction.id} in {resolved_domain} domain."
     try:
-        from calx.distillation.recurrence import check_recurrence
         from calx.core.corrections import materialize
+        from calx.distillation.recurrence import check_recurrence
 
         result = check_recurrence(calx_dir, correction)
         if result.is_recurrence and result.original_id:

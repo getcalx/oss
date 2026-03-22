@@ -4,7 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from calx.core.rules import Rule, read_all_rules, update_rule_status
+from calx.core.rules import read_all_rules, update_rule_status
 
 
 @dataclass
@@ -60,7 +60,10 @@ def generate_review(calx_dir: Path, max_items: int = 10) -> ReviewDocument:
                     type="merge",
                     rule_ids=[ra.id, rb.id],
                     description=f"Rules {ra.id} and {rb.id} overlap ({sim:.0%} similar)",
-                    proposed_action=f"Merge into single rule covering both: '{ra.title}' and '{rb.title}'",
+                    proposed_action=(
+                        f"Merge into single rule covering both: "
+                        f"'{ra.title}' and '{rb.title}'"
+                    ),
                 ))
 
     # 2. Find conflicts
@@ -112,10 +115,10 @@ def _format_review(items: list[ReviewItem]) -> str:
         lines.append(f"Rules: {', '.join(item.rule_ids)}")
         lines.append(f"Issue: {item.description}")
         lines.append(f"Proposed: {item.proposed_action}")
-        lines.append(f"Action: [ ] accept  [ ] reject  [ ] skip")
+        lines.append("Action: [ ] accept  [ ] reject  [ ] skip")
         lines.append("")
 
-    lines.append(f"---")
+    lines.append("---")
     lines.append(f"{len(items)} items for review.")
     return "\n".join(lines)
 

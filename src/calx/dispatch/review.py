@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from calx.core.config import load_config
-from calx.core.rules import read_rules, format_rule_block
+from calx.core.rules import format_rule_block, read_rules
 
 
 @dataclass

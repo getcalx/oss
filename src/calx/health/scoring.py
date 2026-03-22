@@ -6,9 +6,8 @@ from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 
-from calx.core.rules import Rule, read_all_rules, read_rules
 from calx.core.corrections import materialize
-from calx.core.state import load_state
+from calx.core.rules import Rule, read_all_rules, read_rules
 
 
 @dataclass
@@ -23,10 +22,7 @@ class RuleScore:
 
 def score_rules(calx_dir: Path, domain: str | None = None) -> list[RuleScore]:
     """Score all rules (or rules in a domain). Returns RuleScore list."""
-    if domain:
-        rules = read_rules(calx_dir, domain)
-    else:
-        rules = read_all_rules(calx_dir)
+    rules = read_rules(calx_dir, domain) if domain else read_all_rules(calx_dir)
 
     corrections = materialize(calx_dir)
     from calx.health.conflicts import detect_conflicts

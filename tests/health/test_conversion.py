@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from datetime import date
 from pathlib import Path
 
 from calx.core.corrections import CorrectionEvent, append_event
