@@ -8,7 +8,7 @@ Calx captures corrections, detects when the same mistake recurs, promotes recurr
 
 ```bash
 calx correct "don't mock the database in integration tests"
-# → Logged C014. Matches C007: "don't mock the database." (3rd occurrence — promotion eligible.)
+# → Logged C014 (2026-03-22). Matches C007: "don't mock the database." (3rd occurrence — promotion eligible.)
 
 # Next session, your agent loads the rule automatically. No manual editing. No copy-paste.
 ```

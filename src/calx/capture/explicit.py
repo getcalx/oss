@@ -38,7 +38,8 @@ def capture_explicit(
     )
 
     # Try recurrence check — distillation module may not exist yet
-    feedback = f"Logged as {correction.id} in {resolved_domain} domain."
+    date_str = correction.timestamp[:10]
+    feedback = f"Logged {correction.id} ({date_str}) in {resolved_domain} domain."
     try:
         from calx.core.corrections import materialize
         from calx.distillation.recurrence import check_recurrence
@@ -55,12 +56,14 @@ def capture_explicit(
             threshold = config.promotion_threshold
             if count >= threshold:
                 feedback = (
-                    f'Logged. Matches {result.original_id}: "{original_desc}". '
+                    f'Logged {correction.id} ({date_str}). '
+                    f'Matches {result.original_id}: "{original_desc}". '
                     f"({count} occurrence — promotion eligible.)"
                 )
             else:
                 feedback = (
-                    f'Logged. Matches {result.original_id}: "{original_desc}". '
+                    f'Logged {correction.id} ({date_str}). '
+                    f'Matches {result.original_id}: "{original_desc}". '
                     f"({count} occurrences.)"
                 )
     except ImportError:

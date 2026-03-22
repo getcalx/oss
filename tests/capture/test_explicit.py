@@ -28,7 +28,8 @@ def test_capture_creates_correction(tmp_path: Path):
 def test_capture_feedback_no_match(tmp_path: Path):
     calx_dir = _setup_calx_dir(tmp_path, ["api"])
     correction, feedback = capture_explicit(calx_dir, "test message")
-    assert feedback == f"Logged as {correction.id} in api domain."
+    date_str = correction.timestamp[:10]
+    assert feedback == f"Logged {correction.id} ({date_str}) in api domain."
 
 
 def test_auto_detect_domain_from_cwd(tmp_path: Path):

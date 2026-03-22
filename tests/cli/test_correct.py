@@ -36,7 +36,7 @@ def test_correct_outputs_feedback(tmp_path: Path, monkeypatch: object) -> None:
     result = runner.invoke(test_cli, ["correct", "don't mock the database"])
 
     assert result.exit_code == 0
-    assert "Logged as C001" in result.output
+    assert "Logged C001" in result.output
     assert "api" in result.output
 
 
