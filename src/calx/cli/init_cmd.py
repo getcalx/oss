@@ -93,11 +93,35 @@ def init(domains: tuple[str, ...], non_interactive: bool, no_phone_home: bool):
             ref_choice
         ]
 
+    # Claude plan → token discipline
+    plan_thresholds = {
+        "1": ("max", 200_000, 250_000, 1_000_000),
+        "2": ("pro", 80_000, 100_000, 200_000),
+        "3": ("team", 200_000, 250_000, 1_000_000),
+        "4": ("enterprise", 150_000, 200_000, 500_000),
+    }
+    if non_interactive:
+        td_soft, td_ceil, td_window = 200_000, 250_000, 1_000_000
+    else:
+        click.echo("\nClaude plan:")
+        click.echo("  1. Max (1M context)")
+        click.echo("  2. Pro (200k context)")
+        click.echo("  3. Team (1M context)")
+        click.echo("  4. Enterprise")
+        plan_choice = click.prompt("Choice", default="1", type=click.Choice(["1", "2", "3", "4"]))
+        _, td_soft, td_ceil, td_window = plan_thresholds[plan_choice]
+
+    from calx.core.config import TokenDiscipline
+    token_discipline = TokenDiscipline(
+        soft_cap=td_soft, ceiling=td_ceil, model_context_window=td_window,
+    )
+
     # Build domain_paths from detected paths for the selected domains
     domain_paths = {d: detected_paths[d] for d in domain_list if d in detected_paths}
 
     # Create config
     config = default_config(domain_list, phone_home=not no_phone_home, domain_paths=domain_paths)
+    config.token_discipline = token_discipline
     config.agent_naming = agent_naming
     config.referral_source = referral
 
