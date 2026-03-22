@@ -34,31 +34,33 @@ def capture_explicit(
     )
 
     # Try recurrence check — distillation module may not exist yet
+    feedback = f"Logged as {correction.id} in {resolved_domain} domain."
     try:
-        from calx.distillation.recurrence import check_recurrence  # type: ignore[import-not-found]
+        from calx.distillation.recurrence import check_recurrence
+        from calx.core.corrections import materialize
 
-        match = check_recurrence(calx_dir, correction)
+        result = check_recurrence(calx_dir, correction)
+        if result.is_recurrence and result.original_id:
+            # Look up the original correction's description
+            all_corr = materialize(calx_dir)
+            by_id = {c.id: c for c in all_corr}
+            original = by_id.get(result.original_id)
+            original_desc = original.description if original else result.original_id
+            count = result.new_count
+
+            threshold = config.promotion_threshold
+            if count >= threshold:
+                feedback = (
+                    f'Logged. Matches {result.original_id}: "{original_desc}". '
+                    f"({count} occurrence — promotion eligible.)"
+                )
+            else:
+                feedback = (
+                    f'Logged. Matches {result.original_id}: "{original_desc}". '
+                    f"({count} occurrences.)"
+                )
     except ImportError:
-        match = None
-
-    if match is not None:
-        original_id = match["original_id"]
-        original_desc = match["description"]
-        count = match["count"]
-
-        threshold = config.promotion_threshold
-        if count >= threshold:
-            feedback = (
-                f'Logged. Matches {original_id}: "{original_desc}". '
-                f"({count} occurrence — promotion eligible.)"
-            )
-        else:
-            feedback = (
-                f'Logged. Matches {original_id}: "{original_desc}". '
-                f"({count} occurrences.)"
-            )
-    else:
-        feedback = f"Logged as {correction.id} in {resolved_domain} domain."
+        pass
 
     return correction, feedback
 
