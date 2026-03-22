@@ -22,12 +22,14 @@ from calx.core.config import find_calx_dir
 )
 @click.option("--context", "-c", default="", help="Additional context")
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
+@click.option("--session-id", default=None, hidden=True, help="Tag with session ID")
 def correct(
     message: str,
     domain: str | None,
     correction_type: str,
     context: str,
     as_json: bool,
+    session_id: str | None,
 ) -> None:
     """Log a correction. Golden path: calx correct 'message'"""
     calx_dir = find_calx_dir()
@@ -41,6 +43,7 @@ def correct(
         domain=domain,
         correction_type=correction_type,
         context=context,
+        session_id=session_id,
     )
 
     # Phone home — correct event (domain + type only, no content)

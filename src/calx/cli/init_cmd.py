@@ -7,6 +7,7 @@ from pathlib import Path
 
 import click
 
+from calx.core.agents_md import sync_agents_md
 from calx.core.config import default_config, save_config
 from calx.core.rules import Rule, write_rule
 from calx.hooks.installer import install_hooks
@@ -46,7 +47,7 @@ def init(domains: tuple[str, ...], non_interactive: bool, no_phone_home: bool):
         return
 
     # Auto-detect domains
-    detected = _detect_domains(project_dir)
+    detected, detected_paths = _detect_domains(project_dir)
 
     if domains:
         # Split comma-separated values: -d "api,frontend" or -d api -d frontend
@@ -92,8 +93,11 @@ def init(domains: tuple[str, ...], non_interactive: bool, no_phone_home: bool):
             ref_choice
         ]
 
+    # Build domain_paths from detected paths for the selected domains
+    domain_paths = {d: detected_paths[d] for d in domain_list if d in detected_paths}
+
     # Create config
-    config = default_config(domain_list, phone_home=not no_phone_home)
+    config = default_config(domain_list, phone_home=not no_phone_home, domain_paths=domain_paths)
     config.agent_naming = agent_naming
     config.referral_source = referral
 
@@ -148,6 +152,11 @@ def init(domains: tuple[str, ...], non_interactive: bool, no_phone_home: bool):
     )
     write_rule(calx_dir, seed_rule)
 
+    # Sync AGENTS.md files to domain directories
+    agents_written = sync_agents_md(calx_dir)
+    for agents_path in agents_written:
+        click.echo(f"  Wrote {agents_path.relative_to(project_dir)}")
+
     # Install hooks
     result = install_hooks(project_dir)
 
@@ -179,20 +188,25 @@ def init(domains: tuple[str, ...], non_interactive: bool, no_phone_home: bool):
     click.echo("\nRun `calx status` to see your setup.")
 
 
-def _detect_domains(project_dir: Path) -> list[str]:
-    """Auto-detect domains from directory structure."""
-    found: list[str] = []
+def _detect_domains(project_dir: Path) -> tuple[list[str], dict[str, str]]:
+    """Auto-detect domains from directory structure.
+
+    Returns (sorted domain names, domain->relative_path mapping).
+    """
+    found: dict[str, str] = {}
 
     # Check top-level
     for item in project_dir.iterdir():
         if item.is_dir() and item.name in _DOMAIN_PATTERNS:
-            found.append(item.name)
+            found[item.name] = item.name
 
     # Check src/ if it exists
     src_dir = project_dir / "src"
     if src_dir.is_dir():
         for item in src_dir.iterdir():
             if item.is_dir() and item.name in _DOMAIN_PATTERNS and item.name not in found:
-                found.append(item.name)
+                found[item.name] = f"src/{item.name}"
 
-    return sorted(found)
+    names = sorted(found.keys())
+    paths = {k: found[k] for k in names}
+    return names, paths

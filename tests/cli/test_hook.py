@@ -277,10 +277,11 @@ def test_session_end_undistilled_message(tmp_path: Path, monkeypatch: object) ->
     assert "1 corrections pending distillation" in result.output
 
 
-def test_session_end_no_output_when_clean(tmp_path: Path, monkeypatch: object) -> None:
-    """No output when nothing to report (no undistilled, no uncommitted)."""
+def test_session_end_capture_prompt_when_no_corrections(
+    tmp_path: Path, monkeypatch: object
+) -> None:
+    """Shows capture prompt when no corrections were logged this session."""
     project = _setup_calx_project(tmp_path)
-    # Initialize as a git repo with clean state
     monkeypatch.chdir(project)  # type: ignore[attr-defined]
 
     import subprocess
@@ -294,8 +295,23 @@ def test_session_end_no_output_when_clean(tmp_path: Path, monkeypatch: object) -
     runner = CliRunner()
     result = runner.invoke(test_cli, ["_hook", "session-end"])
     assert result.exit_code == 0
-    # No JSON output when nothing to report
-    assert result.output.strip() == ""
+    assert "Any corrections from this session" in result.output
+    assert "calx correct" in result.output
+
+
+def test_session_end_no_capture_prompt_when_corrections_exist(
+    tmp_path: Path, monkeypatch: object
+) -> None:
+    """No capture prompt when corrections were logged."""
+    project = _setup_calx_project(tmp_path, ["api"])
+    calx_dir = project / ".calx"
+    create_correction(calx_dir, domain="api", description="test correction")
+    monkeypatch.chdir(project)  # type: ignore[attr-defined]
+
+    runner = CliRunner()
+    result = runner.invoke(test_cli, ["_hook", "session-end"])
+    assert result.exit_code == 0
+    assert "Any corrections from this session" not in result.output
 
 
 def test_session_end_uncommitted_changes(tmp_path: Path, monkeypatch: object) -> None:

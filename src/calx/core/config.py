@@ -24,6 +24,7 @@ class CalxConfig:
     install_id: str = ""
     anonymous_id: str = ""
     domains: list[str] = field(default_factory=list)
+    domain_paths: dict[str, str] = field(default_factory=dict)
     agent_naming: str = "self"  # "self" | "developer" | "none"
     token_discipline: TokenDiscipline = field(default_factory=TokenDiscipline)
     stats_opt_in: bool = False
@@ -61,6 +62,7 @@ def load_config(calx_dir: Path) -> CalxConfig:
         install_id=data.get("install_id", ""),
         anonymous_id=data.get("anonymous_id", ""),
         domains=data.get("domains", []),
+        domain_paths=data.get("domain_paths", {}),
         agent_naming=data.get("agent_naming", "self"),
         token_discipline=td,
         stats_opt_in=data.get("stats_opt_in", False),
@@ -83,7 +85,12 @@ def save_config(calx_dir: Path, config: CalxConfig) -> None:
     )
 
 
-def default_config(domains: list[str], *, phone_home: bool = True) -> CalxConfig:
+def default_config(
+    domains: list[str],
+    *,
+    phone_home: bool = True,
+    domain_paths: dict[str, str] | None = None,
+) -> CalxConfig:
     """Create a default configuration with the given domains."""
     from calx.core.ids import generate_uuid
 
@@ -91,6 +98,7 @@ def default_config(domains: list[str], *, phone_home: bool = True) -> CalxConfig
         install_id=generate_uuid(),
         anonymous_id=generate_uuid(),
         domains=domains,
+        domain_paths=domain_paths or {},
         phone_home=phone_home,
     )
 

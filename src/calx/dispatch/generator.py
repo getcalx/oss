@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from calx.core.agents_md import get_agents_md_path
 from calx.core.config import load_config
 from calx.core.rules import Rule, format_rule_block, read_rules
 
@@ -52,6 +53,27 @@ def generate_dispatch(
     parts.append("\n## Prohibitions")
     for p in active_prohibitions:
         parts.append(f"- {p}")
+
+    # AGENTS.md path (if co-located)
+    agents_path = get_agents_md_path(calx_dir, domain)
+    if agents_path and agents_path.exists():
+        rel = agents_path.relative_to(calx_dir.parent)
+        parts.append(f"\n## Domain Rules File\nRead `{rel}` before starting work.")
+
+    # Correction capture
+    parts.append(
+        "\n## Correction Capture\n"
+        "If the developer corrects your behavior during this task, log it:\n"
+        f"```bash\ncalx correct \"description\" -d {domain}\n```"
+    )
+
+    # Token discipline
+    td = config.token_discipline
+    parts.append(
+        f"\n## Token Discipline\n"
+        f"Stay under {td.soft_cap:,} tokens. "
+        "Do not let context compaction happen."
+    )
 
     # Agent naming
     if config.agent_naming == "self":

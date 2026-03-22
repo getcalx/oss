@@ -87,6 +87,13 @@ def promote(calx_dir: Path, chain: RecurrenceChain) -> Rule:
 
     write_rule(calx_dir, rule)
 
+    # Sync AGENTS.md if domain_paths configured
+    try:
+        from calx.core.agents_md import sync_agents_md
+        sync_agents_md(calx_dir, chain.domain)
+    except Exception:
+        pass  # AGENTS.md sync is advisory, never blocks promotion
+
     # Append promoted event for the original correction
     ts = datetime.now(timezone.utc).isoformat()
     append_event(

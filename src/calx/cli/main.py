@@ -22,6 +22,7 @@ from calx.cli.health import health  # noqa: E402
 from calx.cli.init_cmd import init  # noqa: E402
 from calx.cli.stats import stats  # noqa: E402
 from calx.cli.status import status  # noqa: E402
+from calx.cli.sync_cmd import sync  # noqa: E402
 
 cli.add_command(init)
 cli.add_command(correct)
@@ -31,6 +32,7 @@ cli.add_command(config_cmd)
 cli.add_command(health)
 cli.add_command(dispatch)
 cli.add_command(stats)
+cli.add_command(sync)
 
 
 # Import and register hook group

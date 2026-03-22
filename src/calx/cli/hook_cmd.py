@@ -175,8 +175,18 @@ def hook_session_end():
     if undistilled:
         output_parts.append(f"{len(undistilled)} corrections pending distillation.")
 
-    # 3. Stats POST (if opted in)
+    # 3. Session-end capture prompt (safety net for missed corrections)
     config = load_config(calx_dir)
+    all_corrections = materialize(calx_dir)
+    if not all_corrections:
+        domains_str = ", ".join(config.domains) if config.domains else "general"
+        output_parts.append(
+            "Any corrections from this session that weren't captured?\n"
+            f"Run: calx correct \"description\" -d DOMAIN\n"
+            f"Available domains: {domains_str}"
+        )
+
+    # 4. Stats POST (if opted in)
     if config.stats_opt_in:
         try:
             payload = build_payload(calx_dir)

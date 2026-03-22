@@ -14,6 +14,7 @@ def capture_explicit(
     domain: str | None = None,
     correction_type: str = "process",
     context: str = "",
+    session_id: str | None = None,
 ) -> tuple[CorrectionState, str]:
     """Capture an explicit correction and return (correction, feedback).
 
@@ -33,6 +34,7 @@ def capture_explicit(
         correction_type=correction_type,
         context=context,
         source="explicit",
+        session_id=session_id,
     )
 
     # Try recurrence check — distillation module may not exist yet
