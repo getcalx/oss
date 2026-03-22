@@ -35,8 +35,8 @@ _DOMAIN_PATTERNS = {
 @click.command()
 @click.option("--domains", "-d", multiple=True, help="Domains to configure")
 @click.option("--non-interactive", is_flag=True, help="Skip prompts, use defaults")
-@click.option("--no-phone-home", is_flag=True, help="Disable anonymous usage tracking")
-def init(domains: tuple[str, ...], non_interactive: bool, no_phone_home: bool):
+@click.option("--phone-home", is_flag=True, help="Enable anonymous usage tracking")
+def init(domains: tuple[str, ...], non_interactive: bool, phone_home: bool):
     """Initialize Calx in the current project."""
     project_dir = Path.cwd()
     calx_dir = project_dir / ".calx"
@@ -101,7 +101,8 @@ def init(domains: tuple[str, ...], non_interactive: bool, no_phone_home: bool):
         "4": ("enterprise", 150_000, 200_000, 500_000),
     }
     if non_interactive:
-        td_soft, td_ceil, td_window = 200_000, 250_000, 1_000_000
+        # Default to Pro (conservative) — users can change via calx config
+        td_soft, td_ceil, td_window = 80_000, 100_000, 200_000
     else:
         click.echo("\nClaude plan:")
         click.echo("  1. Max (1M context)")
@@ -120,7 +121,7 @@ def init(domains: tuple[str, ...], non_interactive: bool, no_phone_home: bool):
     domain_paths = {d: detected_paths[d] for d in domain_list if d in detected_paths}
 
     # Create config
-    config = default_config(domain_list, phone_home=not no_phone_home, domain_paths=domain_paths)
+    config = default_config(domain_list, phone_home=phone_home, domain_paths=domain_paths)
     config.token_discipline = token_discipline
     config.agent_naming = agent_naming
     config.referral_source = referral

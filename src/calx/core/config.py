@@ -28,7 +28,7 @@ class CalxConfig:
     agent_naming: str = "self"  # "self" | "developer" | "none"
     token_discipline: TokenDiscipline = field(default_factory=TokenDiscipline)
     stats_opt_in: bool = False
-    phone_home: bool = True
+    phone_home: bool = False
     api_url: str = "https://calx.sh/api/v1/events"
     referral_source: str = ""  # "paper" | "colleague" | "github" | "social" | "other"
     staleness_days: int = 30
@@ -88,7 +88,7 @@ def save_config(calx_dir: Path, config: CalxConfig) -> None:
 def default_config(
     domains: list[str],
     *,
-    phone_home: bool = True,
+    phone_home: bool = False,
     domain_paths: dict[str, str] | None = None,
 ) -> CalxConfig:
     """Create a default configuration with the given domains."""

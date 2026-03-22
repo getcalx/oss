@@ -15,24 +15,26 @@ class InstallResult:
     settings_created: bool = False
 
 
-# Calx hooks to install into .claude/settings.json
-_CALX_HOOKS = {
-    "SessionStart": [
-        {"hooks": [{"type": "command", "command": ".calx/hooks/session-start.sh"}]}
-    ],
-    "PreToolUse": [
-        {
-            "matcher": "Edit|Write",
-            "hooks": [
-                {"type": "command", "command": ".calx/hooks/orientation-gate.sh"},
-                {"type": "command", "command": ".calx/hooks/collapse-guard.sh"},
-            ],
-        }
-    ],
-    "Stop": [
-        {"hooks": [{"type": "command", "command": ".calx/hooks/session-end.sh"}]}
-    ],
-}
+def _calx_hooks(project_dir: Path) -> dict:
+    """Build hook config with absolute paths to prevent resolution failures."""
+    hooks_dir = str((project_dir / ".calx" / "hooks").resolve())
+    return {
+        "SessionStart": [
+            {"hooks": [{"type": "command", "command": f"{hooks_dir}/session-start.sh"}]}
+        ],
+        "PreToolUse": [
+            {
+                "matcher": "Edit|Write",
+                "hooks": [
+                    {"type": "command", "command": f"{hooks_dir}/orientation-gate.sh"},
+                    {"type": "command", "command": f"{hooks_dir}/collapse-guard.sh"},
+                ],
+            }
+        ],
+        "Stop": [
+            {"hooks": [{"type": "command", "command": f"{hooks_dir}/session-end.sh"}]}
+        ],
+    }
 
 # Template source name -> installed name mapping
 _TEMPLATE_MAP = {
@@ -65,17 +67,18 @@ def install_hooks(project_dir: Path) -> InstallResult:
         settings = {}
         result.settings_created = True
 
+    calx_hooks = _calx_hooks(project_dir)
     existing_hooks = settings.get("hooks", {})
-    merged = _merge_hooks(existing_hooks, _CALX_HOOKS)
+    merged = _merge_hooks(existing_hooks, calx_hooks)
 
     # Track what was installed vs skipped
-    for event_name in _CALX_HOOKS:
+    for event_name in calx_hooks:
         if event_name not in existing_hooks:
             result.hooks_installed.append(event_name)
         else:
             # Check if our hooks were already present
             existing_commands = _extract_commands(existing_hooks.get(event_name, []))
-            new_commands = _extract_commands(_CALX_HOOKS[event_name])
+            new_commands = _extract_commands(calx_hooks[event_name])
             added = [c for c in new_commands if c not in existing_commands]
             if added:
                 result.hooks_installed.append(event_name)

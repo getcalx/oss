@@ -30,20 +30,24 @@ def test_hooks_structure(tmp_path: Path):
     # SessionStart
     assert "SessionStart" in hooks
     assert len(hooks["SessionStart"]) == 1
-    assert hooks["SessionStart"][0]["hooks"][0]["command"] == ".calx/hooks/session-start.sh"
+    start_cmd = hooks["SessionStart"][0]["hooks"][0]["command"]
+    assert start_cmd.endswith("/session-start.sh")
+    assert "/" in start_cmd and not start_cmd.startswith(".")  # absolute path
 
     # PreToolUse
     assert "PreToolUse" in hooks
     assert len(hooks["PreToolUse"]) == 1
     assert hooks["PreToolUse"][0]["matcher"] == "Edit|Write"
     commands = [h["command"] for h in hooks["PreToolUse"][0]["hooks"]]
-    assert ".calx/hooks/orientation-gate.sh" in commands
-    assert ".calx/hooks/collapse-guard.sh" in commands
+    assert any(c.endswith("/orientation-gate.sh") for c in commands)
+    assert any(c.endswith("/collapse-guard.sh") for c in commands)
 
     # Stop
     assert "Stop" in hooks
     assert len(hooks["Stop"]) == 1
-    assert hooks["Stop"][0]["hooks"][0]["command"] == ".calx/hooks/session-end.sh"
+    stop_cmd = hooks["Stop"][0]["hooks"][0]["command"]
+    assert stop_cmd.endswith("/session-end.sh")
+    assert not stop_cmd.startswith(".")
 
 
 def test_idempotent_install(tmp_path: Path):
@@ -97,8 +101,8 @@ def test_existing_hooks_preserved(tmp_path: Path):
             commands.add(hook["command"])
 
     assert "my-custom-hook.sh" in commands
-    assert ".calx/hooks/orientation-gate.sh" in commands
-    assert ".calx/hooks/collapse-guard.sh" in commands
+    assert any(c.endswith("/orientation-gate.sh") for c in commands)
+    assert any(c.endswith("/collapse-guard.sh") for c in commands)
 
 
 def test_templates_copied(tmp_path: Path):
