@@ -1,0 +1,161 @@
+"""calx init — project initialization."""
+
+from __future__ import annotations
+
+from datetime import date
+from pathlib import Path
+
+import click
+
+from calx.core.config import default_config, save_config
+from calx.core.rules import Rule, write_rule
+from calx.hooks.installer import install_hooks
+from calx.templates.calx_readme import generate_calx_readme
+from calx.templates.claude_md_scaffold import generate_claude_md_scaffold
+
+_DOMAIN_PATTERNS = {
+    "api",
+    "services",
+    "models",
+    "db",
+    "tests",
+    "frontend",
+    "backend",
+    "core",
+    "lib",
+    "utils",
+    "web",
+    "mobile",
+    "infra",
+}
+
+
+@click.command()
+@click.option("--domains", "-d", multiple=True, help="Domains to configure")
+@click.option("--non-interactive", is_flag=True, help="Skip prompts, use defaults")
+def init(domains: tuple[str, ...], non_interactive: bool):
+    """Initialize Calx in the current project."""
+    project_dir = Path.cwd()
+    calx_dir = project_dir / ".calx"
+
+    if calx_dir.exists():
+        click.echo("Calx is already initialized in this project.")
+        click.echo("Run `calx config` to change settings.")
+        return
+
+    # Auto-detect domains
+    detected = _detect_domains(project_dir)
+
+    if domains:
+        domain_list = list(domains)
+    elif non_interactive:
+        domain_list = detected if detected else ["general"]
+    else:
+        if detected:
+            click.echo(f"Detected domains: {', '.join(detected)}")
+            confirmed = click.confirm("Use these domains?", default=True)
+            if confirmed:
+                domain_list = detected
+            else:
+                raw = click.prompt("Enter domains (comma-separated)", default="general")
+                domain_list = [d.strip() for d in raw.split(",") if d.strip()]
+        else:
+            raw = click.prompt("Enter domains (comma-separated)", default="general")
+            domain_list = [d.strip() for d in raw.split(",") if d.strip()]
+
+    # Agent naming
+    if non_interactive:
+        agent_naming = "self"
+    else:
+        click.echo("\nAgent naming preference:")
+        click.echo("  1. self — Agent names itself")
+        click.echo("  2. developer — You name the agent")
+        click.echo("  3. none — No naming")
+        choice = click.prompt("Choice", default="1", type=click.Choice(["1", "2", "3"]))
+        agent_naming = {"1": "self", "2": "developer", "3": "none"}[choice]
+
+    # Referral source
+    if non_interactive:
+        referral = ""
+    else:
+        click.echo("\nHow did you hear about Calx?")
+        click.echo("  1. paper  2. colleague  3. github  4. social  5. other")
+        ref_choice = click.prompt(
+            "Choice", default="5", type=click.Choice(["1", "2", "3", "4", "5"])
+        )
+        referral = {"1": "paper", "2": "colleague", "3": "github", "4": "social", "5": "other"}[
+            ref_choice
+        ]
+
+    # Create config
+    config = default_config(domain_list)
+    config.agent_naming = agent_naming
+    config.referral_source = referral
+
+    # Create directory structure
+    calx_dir.mkdir(parents=True, exist_ok=True)
+    (calx_dir / "rules").mkdir(exist_ok=True)
+    (calx_dir / "health").mkdir(exist_ok=True)
+    (calx_dir / "hooks").mkdir(exist_ok=True)
+
+    # Save config
+    save_config(calx_dir, config)
+
+    # Generate README
+    readme_content = generate_calx_readme(domain_list)
+    (calx_dir / "README").write_text(readme_content, encoding="utf-8")
+
+    # Seed example rule
+    first_domain = domain_list[0] if domain_list else "general"
+    seed_rule = Rule(
+        id=f"{first_domain}-R001",
+        domain=first_domain,
+        type="process",
+        source_corrections=["seed"],
+        added=date.today().isoformat(),
+        status="active",
+        title="Never rewrite a file from scratch — always delta edit",
+        body=(
+            "When modifying existing files, use targeted edits (Edit tool) rather than\n"
+            "full rewrites (Write tool). Full rewrites lose accumulated content and\n"
+            "introduce inconsistencies. This rule is pre-loaded so you can see the\n"
+            "injection mechanism work immediately."
+        ),
+    )
+    write_rule(calx_dir, seed_rule)
+
+    # Install hooks
+    result = install_hooks(project_dir)
+
+    # Scaffold CLAUDE.md if none exists
+    claude_md = project_dir / "CLAUDE.md"
+    if not claude_md.exists():
+        scaffold = generate_claude_md_scaffold(project_dir.name, domain_list)
+        claude_md.write_text(scaffold, encoding="utf-8")
+        click.echo("Created CLAUDE.md scaffold")
+
+    # Summary
+    click.echo(f"\nCalx initialized!")
+    click.echo(f"  Domains: {', '.join(domain_list)}")
+    click.echo(f"  Hooks: {len(result.hooks_installed)} installed, {len(result.hooks_skipped)} skipped")
+    click.echo(f"  Seed rule: {seed_rule.id}")
+    click.echo(f"\nRun `calx status` to see your setup.")
+
+
+def _detect_domains(project_dir: Path) -> list[str]:
+    """Auto-detect domains from directory structure."""
+    found: list[str] = []
+
+    # Check top-level
+    for item in project_dir.iterdir():
+        if item.is_dir() and item.name in _DOMAIN_PATTERNS:
+            found.append(item.name)
+
+    # Check src/ if it exists
+    src_dir = project_dir / "src"
+    if src_dir.is_dir():
+        for item in src_dir.iterdir():
+            if item.is_dir() and item.name in _DOMAIN_PATTERNS and item.name not in found:
+                found.append(item.name)
+
+    return sorted(found)
