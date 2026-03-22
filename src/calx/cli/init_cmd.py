@@ -12,6 +12,7 @@ from calx.core.rules import Rule, write_rule
 from calx.hooks.installer import install_hooks
 from calx.templates.calx_readme import generate_calx_readme
 from calx.templates.claude_md_scaffold import generate_claude_md_scaffold
+from calx.templates.method_docs import dispatch, how_we_document, orchestration, review
 
 _DOMAIN_PATTERNS = {
     "api",
@@ -97,6 +98,7 @@ def init(domains: tuple[str, ...], non_interactive: bool):
     (calx_dir / "rules").mkdir(exist_ok=True)
     (calx_dir / "health").mkdir(exist_ok=True)
     (calx_dir / "hooks").mkdir(exist_ok=True)
+    (calx_dir / "method").mkdir(exist_ok=True)
 
     # Save config
     save_config(calx_dir, config)
@@ -104,6 +106,13 @@ def init(domains: tuple[str, ...], non_interactive: bool):
     # Generate README
     readme_content = generate_calx_readme(domain_list)
     (calx_dir / "README").write_text(readme_content, encoding="utf-8")
+
+    # Write method documentation
+    method_dir = calx_dir / "method"
+    (method_dir / "how-we-document.md").write_text(how_we_document(), encoding="utf-8")
+    (method_dir / "orchestration.md").write_text(orchestration(), encoding="utf-8")
+    (method_dir / "dispatch.md").write_text(dispatch(), encoding="utf-8")
+    (method_dir / "review.md").write_text(review(), encoding="utf-8")
 
     # Seed example rule
     first_domain = domain_list[0] if domain_list else "general"

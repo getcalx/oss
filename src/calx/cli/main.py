@@ -33,7 +33,7 @@ cli.add_command(dispatch)
 cli.add_command(stats)
 
 
-# Hidden hook group for internal callbacks
-@cli.group(hidden=True, name="_hook")
-def hook_group():
-    """Internal hook callbacks."""
+# Import and register hook group
+from calx.cli.hook_cmd import hook_group  # noqa: E402
+
+cli.add_command(hook_group)
