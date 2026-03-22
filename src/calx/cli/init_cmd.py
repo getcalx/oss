@@ -34,7 +34,8 @@ _DOMAIN_PATTERNS = {
 @click.command()
 @click.option("--domains", "-d", multiple=True, help="Domains to configure")
 @click.option("--non-interactive", is_flag=True, help="Skip prompts, use defaults")
-def init(domains: tuple[str, ...], non_interactive: bool):
+@click.option("--no-phone-home", is_flag=True, help="Disable anonymous usage tracking")
+def init(domains: tuple[str, ...], non_interactive: bool, no_phone_home: bool):
     """Initialize Calx in the current project."""
     project_dir = Path.cwd()
     calx_dir = project_dir / ".calx"
@@ -48,7 +49,10 @@ def init(domains: tuple[str, ...], non_interactive: bool):
     detected = _detect_domains(project_dir)
 
     if domains:
-        domain_list = list(domains)
+        # Split comma-separated values: -d "api,frontend" or -d api -d frontend
+        domain_list = [
+            d.strip() for raw in domains for d in raw.split(",") if d.strip()
+        ]
     elif non_interactive:
         domain_list = detected if detected else ["general"]
     else:
@@ -89,7 +93,7 @@ def init(domains: tuple[str, ...], non_interactive: bool):
         ]
 
     # Create config
-    config = default_config(domain_list)
+    config = default_config(domain_list, phone_home=not no_phone_home)
     config.agent_naming = agent_naming
     config.referral_source = referral
 
@@ -142,6 +146,17 @@ def init(domains: tuple[str, ...], non_interactive: bool):
         scaffold = generate_claude_md_scaffold(project_dir.name, domain_list)
         claude_md.write_text(scaffold, encoding="utf-8")
         click.echo("Created CLAUDE.md scaffold")
+
+    # Phone home — send install event
+    from calx.core.phone_home import send_event
+
+    send_event(calx_dir, "install")
+
+    if config.phone_home:
+        click.echo(
+            "Anonymous usage tracking enabled. "
+            "Disable with: calx config --set phone_home false"
+        )
 
     # Summary
     click.echo(f"\nCalx initialized!")
