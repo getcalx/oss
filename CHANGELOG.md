@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2 (2026-03-23)
+
+- Fixed Zenodo paper link in README
+
 ## 0.2.1 (2026-03-23)
 
 - Weekly review prompt at session start — checks system clock, surfaces if 7+ days since last review
