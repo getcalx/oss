@@ -39,6 +39,15 @@ def hook_session_start():
     config = load_config(calx_dir)
     output_parts: list[str] = []
 
+    # 0b. Update check (cached, non-blocking)
+    try:
+        from calx.core.update_check import check_for_update
+        update_msg = check_for_update(calx_dir)
+        if update_msg:
+            output_parts.append(update_msg)
+    except Exception:
+        pass
+
     # 1. Dirty exit check
     if not exit_status.was_clean:
         output_parts.append(

@@ -1,7 +1,8 @@
 # Changelog
 
-## 0.2.2 (2026-03-23)
+## 0.2.3 (2026-03-23)
 
+- Update check at session start — pings PyPI once per 24 hours, shows "Calx X.Y.Z available" if newer version exists
 - Fixed Zenodo paper link in README
 
 ## 0.2.1 (2026-03-23)

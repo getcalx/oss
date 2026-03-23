@@ -163,4 +163,5 @@ def test_init_version_option():
     runner = CliRunner()
     result = runner.invoke(cli, ["--version"])
     assert result.exit_code == 0
-    assert "0.2.0" in result.output
+    from calx import __version__
+    assert __version__ in result.output
