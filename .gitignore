@@ -10,4 +10,4 @@ build/
 venv/
 .env
 *.egg
-.calx/
+# .calx/ inner .gitignore handles local vs committed files

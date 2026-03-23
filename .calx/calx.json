@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "install_id": "cd8bc8a7de4041cab0591c02b03bf5fa",
+  "anonymous_id": "c4ba1aabece941439173581707ff5676",
+  "domains": [
+    "core",
+    "cli",
+    "capture",
+    "distillation",
+    "health",
+    "hooks",
+    "dispatch",
+    "templates",
+    "tests"
+  ],
+  "domain_paths": {
+    "core": "src/calx/core",
+    "cli": "src/calx/cli",
+    "capture": "src/calx/capture",
+    "distillation": "src/calx/distillation",
+    "health": "src/calx/health",
+    "hooks": "src/calx/hooks",
+    "dispatch": "src/calx/dispatch",
+    "templates": "src/calx/templates",
+    "tests": "tests"
+  },
+  "agent_naming": "self",
+  "token_discipline": {
+    "soft_cap": 200000,
+    "ceiling": 250000,
+    "model_context_window": 1000000
+  },
+  "stats_opt_in": false,
+  "phone_home": true,
+  "api_url": "https://calx.sh/api/v1/events",
+  "referral_source": "",
+  "staleness_days": 30,
+  "promotion_threshold": 3,
+  "max_prompts_per_session": 3
+}

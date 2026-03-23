@@ -1,0 +1,5 @@
+# Commit: calx.json, rules/, method/, README
+# Ignore: local state and event logs
+corrections.jsonl
+health/
+hooks/

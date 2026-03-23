@@ -1,0 +1,34 @@
+# .calx/ — Behavioral Governance
+
+This directory is managed by [Calx](https://calx.sh), a behavioral governance
+layer for AI coding agents.
+
+## What's in here
+
+- `calx.json` — configuration (domains, thresholds, preferences)
+- `corrections.jsonl` — event-sourced correction log (append-only)
+- `rules/` — distilled rules by domain (what the agent reads at session start)
+- `hooks/` — Claude Code hook scripts (orientation gate, session lifecycle)
+- `health/` — health state and analytics
+- `events.jsonl` — instrumentation event log
+
+## Configured domains
+
+tests
+
+## Quick start
+
+If you're a collaborator on this repo and want Calx managing your agent sessions:
+
+```
+pip install getcalx
+calx init
+```
+
+If you just want to understand the rules this project enforces on AI agents,
+read the files in `rules/`.
+
+## More info
+
+- Docs: https://calx.sh
+- Paper: "The Behavioral Plane" — why learned corrections don't transfer between agents

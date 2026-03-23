@@ -1,0 +1,6 @@
+# AGENTS.md — Health Conventions
+
+Managed by Calx. Do not edit directly — changes here will be overwritten.
+Edit rules in `.calx/rules/health.md` and run `calx sync`.
+
+No rules defined yet for `health`.
