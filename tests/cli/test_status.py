@@ -70,7 +70,7 @@ def test_status_shows_corrections_and_rules(tmp_path: Path, monkeypatch: object)
 
     assert result.exit_code == 0
     assert "1 total" in result.output
-    assert "1 pending distillation" in result.output
+    assert "1 not yet promoted" in result.output
     assert "1 active" in result.output
 
 
@@ -91,7 +91,7 @@ def test_status_json_output(tmp_path: Path, monkeypatch: object) -> None:
     assert data["domains"] == ["api", "services"]
     assert "corrections" in data
     assert data["corrections"]["total"] == 0
-    assert data["corrections"]["pending_distillation"] == 0
+    assert data["corrections"]["not_yet_promoted"] == 0
     assert "rules" in data
     assert data["rules"]["active"] == 0
     assert data["rules"]["domains"] == 0

@@ -7,6 +7,7 @@ import click
 
 from calx.core.config import find_calx_dir, load_config
 from calx.core.corrections import get_undistilled, materialize
+from calx.distillation.recurrence import get_promotion_candidates
 from calx.core.rules import read_all_rules
 from calx.core.state import check_clean_exit
 
@@ -28,6 +29,7 @@ def status(as_json: bool) -> None:
     exit_status = check_clean_exit(calx_dir)
 
     domains_with_rules = len({r.domain for r in active_rules})
+    promotion_ready = get_promotion_candidates(calx_dir, config.promotion_threshold)
 
     if as_json:
         click.echo(
@@ -36,7 +38,8 @@ def status(as_json: bool) -> None:
                     "domains": config.domains,
                     "corrections": {
                         "total": len(corrections),
-                        "pending_distillation": len(undistilled),
+                        "not_yet_promoted": len(undistilled),
+                        "promotion_ready": len(promotion_ready),
                     },
                     "rules": {
                         "active": len(active_rules),
@@ -50,9 +53,16 @@ def status(as_json: bool) -> None:
     else:
         click.echo("Calx Status")
         click.echo(f"  Domains: {', '.join(config.domains) if config.domains else '(none)'}")
-        click.echo(
-            f"  Corrections: {len(corrections)} total, {len(undistilled)} pending distillation"
-        )
+        if promotion_ready:
+            click.echo(
+                f"  Corrections: {len(corrections)} total, "
+                f"{len(promotion_ready)} ready for promotion"
+            )
+        else:
+            click.echo(
+                f"  Corrections: {len(corrections)} total, "
+                f"{len(undistilled)} not yet promoted"
+            )
         click.echo(f"  Rules: {len(active_rules)} active across {domains_with_rules} domain(s)")
         if exit_status.last_exit_time:
             click.echo(f"  Last clean exit: {exit_status.last_exit_time[:19]}")

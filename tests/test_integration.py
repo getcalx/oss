@@ -75,7 +75,7 @@ class TestFullLifecycle:
         assert s1.exit_code == 0
         status_data = json.loads(s1.output)
         assert status_data["corrections"]["total"] == 4
-        assert status_data["corrections"]["pending_distillation"] == 4
+        assert status_data["corrections"]["not_yet_promoted"] == 4
 
         # --- Step 4: distill (promote) ---
         # The distill command prompts interactively; feed "y" to approve
@@ -314,7 +314,7 @@ class TestMultiDomain:
         assert r.exit_code == 0
         data = json.loads(r.output)
         assert data["corrections"]["total"] == 4
-        assert data["corrections"]["pending_distillation"] == 4
+        assert data["corrections"]["not_yet_promoted"] == 4
         assert set(data["domains"]) == {"api", "frontend", "services"}
 
     def test_recurrence_scoped_to_domain(
