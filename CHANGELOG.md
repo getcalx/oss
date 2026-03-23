@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1 (2026-03-23)
+
+- Weekly review prompt at session start — checks system clock, surfaces if 7+ days since last review
+- Orientation gate simplified — dropped session ID matching, just checks for any recent marker
+
 ## 0.2.0 (2026-03-23)
 
 ### Operating system layer
