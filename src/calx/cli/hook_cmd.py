@@ -121,7 +121,41 @@ def hook_session_start():
             f"(triggered {config.promotion_threshold}+ times)."
         )
 
-    # 7. Token discipline instructions
+    # 7. Weekly review check
+    from datetime import datetime, timezone
+    from calx.core.state import load_state
+
+    state = load_state(calx_dir)
+    if all_rules:
+        should_review = False
+        if not state.last_health_check:
+            should_review = True
+        else:
+            try:
+                last = datetime.fromisoformat(state.last_health_check)
+                days_since = (datetime.now(timezone.utc) - last).days
+                should_review = days_since >= 7
+            except (ValueError, TypeError):
+                should_review = True
+
+        if should_review:
+            from calx.distillation.review import generate_review
+
+            review = generate_review(calx_dir, max_items=10)
+            if review.items:
+                output_parts.append(
+                    f"\n--- WEEKLY REVIEW ({len(review.items)} items) ---\n"
+                    "Your rule set is due for review. Run `calx distill --review` "
+                    "to merge duplicates, resolve conflicts, and archive stale rules.\n"
+                    "--- END WEEKLY REVIEW ---"
+                )
+            else:
+                # No issues found — update the timestamp silently
+                from calx.core.state import save_state
+                state.last_health_check = datetime.now(timezone.utc).isoformat()
+                save_state(calx_dir, state)
+
+    # 8. Token discipline instructions
     td = config.token_discipline
     output_parts.append(
         f"\n--- TOKEN DISCIPLINE ---\n"
