@@ -85,7 +85,7 @@ Other approaches assume corrections compound and transfer between agents. Share 
 
 We gave an AI agent 237 rules learned from another agent. It made 44 new mistakes, 13 in categories the rules explicitly covered. Process rules showed ~50% persistence. Architectural fixes had zero recurrence.
 
-[The Behavioral Plane (paper)](https://doi.org/10.5281/zenodo.15054630) | [Evidence repo](https://github.com/getcalx/calx-paper-evidence)
+[The Behavioral Plane (paper)](https://doi.org/10.5281/zenodo.19159223) | [Evidence repo](https://github.com/getcalx/calx-paper-evidence)
 
 ## Commands
 
