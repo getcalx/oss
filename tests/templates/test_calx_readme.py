@@ -3,9 +3,9 @@
 from calx.templates.calx_readme import generate_calx_readme
 
 
-def test_readme_has_behavioral_governance_heading():
+def test_readme_has_correction_engineering_heading():
     result = generate_calx_readme(["api"])
-    assert "# .calx/ — Behavioral Governance" in result
+    assert "# .calx/ — Correction Engineering" in result
 
 
 def test_readme_lists_domains():

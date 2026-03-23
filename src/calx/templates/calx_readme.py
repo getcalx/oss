@@ -11,10 +11,10 @@ def generate_calx_readme(domains: list[str]) -> str:
     """
     domain_list = ", ".join(domains) if domains else "(none configured)"
 
-    return f"""# .calx/ — Behavioral Governance
+    return f"""# .calx/ — Correction Engineering
 
-This directory is managed by [Calx](https://calx.sh), a behavioral governance
-layer for AI coding agents.
+This directory is managed by [Calx](https://calx.sh), a correction engineering
+tool for AI agents.
 
 ## What's in here
 

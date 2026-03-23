@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "getcalx"
-version = "0.1.0"
-description = "Behavioral governance layer for AI coding agents. Makes corrections compound."
+version = "0.2.0"
+description = "Correction engineering for AI agents."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"

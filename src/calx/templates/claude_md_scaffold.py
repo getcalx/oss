@@ -45,7 +45,7 @@ def generate_calx_section(
     return f"""
 ## Calx
 
-This project uses [Calx](https://calx.sh) for behavioral governance.
+This project uses [Calx](https://calx.sh) for correction engineering.
 Rules are injected automatically at session start via hooks. An orientation
 gate blocks file edits until rules have been read.
 
@@ -118,7 +118,7 @@ def generate_claude_md_scaffold(
 
 ## Calx
 
-This project uses [Calx](https://calx.sh) for behavioral governance.
+This project uses [Calx](https://calx.sh) for correction engineering.
 Rules are injected automatically at session start via hooks. An orientation
 gate blocks file edits until rules have been read.
 

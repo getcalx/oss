@@ -93,9 +93,9 @@ def orchestration() -> str:
     return """\
 # Orchestration
 
-Calx uses hook-based orchestration to enforce behavioral governance without
+Calx uses hook-based orchestration to enforce correction engineering without
 requiring manual discipline. Hooks fire at session boundaries and during work,
-creating a governance layer that operates automatically.
+creating an automation layer that operates automatically.
 
 ## Session Bootstrap
 

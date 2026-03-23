@@ -1,4 +1,4 @@
-"""Calx CLI — behavioral governance for AI coding agents."""
+"""Calx CLI — correction engineering for AI agents."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from calx import __version__
 @click.group()
 @click.version_option(__version__, prog_name="calx")
 def cli():
-    """Calx — behavioral governance for AI coding agents."""
+    """Calx — correction engineering for AI agents."""
 
 
 # Import and register subcommands
