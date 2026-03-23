@@ -88,8 +88,8 @@ def test_init_claude_md_scaffold_created(tmp_path, monkeypatch):
     assert "Created CLAUDE.md scaffold" in result.output
 
 
-def test_init_claude_md_not_overwritten(tmp_path, monkeypatch):
-    """Existing CLAUDE.md is NOT overwritten by init."""
+def test_init_claude_md_appends_calx_section(tmp_path, monkeypatch):
+    """Existing CLAUDE.md gets Calx section appended, not overwritten."""
     monkeypatch.chdir(tmp_path)
     existing_content = "# My Project\n\nDo not touch this.\n"
     (tmp_path / "CLAUDE.md").write_text(existing_content)
@@ -99,7 +99,12 @@ def test_init_claude_md_not_overwritten(tmp_path, monkeypatch):
     assert result.exit_code == 0, result.output
 
     claude_md = tmp_path / "CLAUDE.md"
-    assert claude_md.read_text() == existing_content
+    content = claude_md.read_text()
+    assert content.startswith("# My Project")
+    assert "Do not touch this." in content
+    assert "## Calx" in content
+    assert "calx correct" in content
+    assert "Added Calx section" in result.output
     assert "Created CLAUDE.md scaffold" not in result.output
 
 

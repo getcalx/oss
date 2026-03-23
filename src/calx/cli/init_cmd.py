@@ -12,7 +12,11 @@ from calx.core.config import default_config, save_config
 from calx.core.rules import Rule, write_rule
 from calx.hooks.installer import install_hooks
 from calx.templates.calx_readme import generate_calx_readme
-from calx.templates.claude_md_scaffold import generate_claude_md_scaffold
+from calx.templates.claude_md_scaffold import (
+    generate_calx_section,
+    generate_claude_md_scaffold,
+    scan_conflicts,
+)
 from calx.templates.method_docs import dispatch, how_we_document, orchestration, review
 
 _DOMAIN_PATTERNS = {
@@ -185,12 +189,22 @@ def init(domains: tuple[str, ...], non_interactive: bool, phone_home: bool):
     # Install hooks
     result = install_hooks(project_dir)
 
-    # Scaffold CLAUDE.md if none exists
+    # CLAUDE.md: scaffold or append Calx section
     claude_md = project_dir / "CLAUDE.md"
     if not claude_md.exists():
-        scaffold = generate_claude_md_scaffold(project_dir.name, domain_list)
+        scaffold = generate_claude_md_scaffold(
+            project_dir.name, domain_list, config=config, domain_paths=domain_paths,
+        )
         claude_md.write_text(scaffold, encoding="utf-8")
         click.echo("Created CLAUDE.md scaffold")
+    else:
+        existing = claude_md.read_text(encoding="utf-8")
+        conflicts = scan_conflicts(existing)
+        for warning in conflicts:
+            click.echo(f"  Warning: {warning}")
+        calx_section = generate_calx_section(domain_list, config=config)
+        claude_md.write_text(existing.rstrip() + "\n" + calx_section, encoding="utf-8")
+        click.echo("Added Calx section to existing CLAUDE.md")
 
     # Phone home — send install event
     from calx.core.phone_home import send_event

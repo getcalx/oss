@@ -17,8 +17,15 @@ calx correct "don't mock the database in integration tests"
 
 ```bash
 pip install getcalx
-calx init
 ```
+
+Then in your Claude Code session, run init directly:
+
+```
+! calx init
+```
+
+This walks you through 4 questions (domains, agent naming, referral, Claude plan), scaffolds `.calx/`, installs hooks, and adds Calx instructions to your CLAUDE.md. If you already have a CLAUDE.md, Calx appends its sections without overwriting your existing content.
 
 Requires Python 3.10+. Works with Claude Code. Cursor, Copilot, and Windsurf support planned. Any agent with session hooks can integrate.
 
