@@ -27,7 +27,7 @@ Then in your Claude Code session, run init directly:
 
 This walks you through 4 questions (domains, agent naming, referral, Claude plan), scaffolds `.calx/`, installs hooks, and adds Calx instructions to your CLAUDE.md. If you already have a CLAUDE.md, Calx appends its sections without overwriting your existing content.
 
-Requires Python 3.10+. Works with Claude Code. Cursor, Copilot, and Windsurf support planned. Any agent with session hooks can integrate.
+Requires Python 3.10+. macOS and Linux supported. Windows support coming soon. Works with Claude Code today. Cursor, Copilot, and Windsurf support is planned -- any editor that supports session hooks can integrate.
 
 ## How it works
 
