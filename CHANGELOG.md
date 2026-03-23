@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.4 (2026-03-23)
+
+- Status shows "not yet promoted" instead of confusing "pending distillation"
+- Status shows "ready for promotion" when corrections hit recurrence threshold
+- README: macOS/Linux only, Windows coming soon
+
 ## 0.2.3 (2026-03-23)
 
 - Update check at session start — pings PyPI once per 24 hours, shows "Calx X.Y.Z available" if newer version exists
