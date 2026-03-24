@@ -21,7 +21,6 @@ tool for AI agents.
 - `calx.json` — configuration (domains, thresholds, preferences)
 - `corrections.jsonl` — event-sourced correction log (append-only)
 - `rules/` — distilled rules by domain (what the agent reads at session start)
-- `hooks/` — Claude Code hook scripts (orientation gate, session lifecycle)
 - `health/` — health state and analytics
 - `events.jsonl` — instrumentation event log
 

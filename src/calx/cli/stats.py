@@ -8,13 +8,11 @@ import click
 from calx.core.config import find_calx_dir
 from calx.core.corrections import materialize
 from calx.core.rules import read_all_rules
-from calx.core.telemetry import build_payload, post_stats
 
 
 @click.command()
-@click.option("--share", is_flag=True, help="POST anonymous stats")
 @click.option("--json", "as_json", is_flag=True)
-def stats(share: bool, as_json: bool):
+def stats(as_json: bool):
     """Show local metrics and optionally share anonymous stats."""
     calx_dir = find_calx_dir()
     if not calx_dir:
@@ -70,11 +68,3 @@ def stats(share: bool, as_json: bool):
         if floor_info:
             click.echo(f"  Error floor trajectory: {floor_info}")
 
-    if share:
-        payload = build_payload(calx_dir)
-        click.echo("\nSharing anonymous stats...")
-        success = post_stats(payload)
-        if success:
-            click.echo("Stats shared successfully.")
-        else:
-            click.echo("Failed to share stats (endpoint may not be available yet).")

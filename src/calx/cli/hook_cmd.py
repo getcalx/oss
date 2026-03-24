@@ -15,7 +15,6 @@ from calx.core.corrections import get_undistilled, materialize
 from calx.core.integrity import check_jsonl_integrity, repair_jsonl
 from calx.core.rules import format_rule_block, read_all_rules
 from calx.core.state import check_clean_exit, remove_clean_exit, write_clean_exit
-from calx.core.telemetry import build_payload, post_stats
 from calx.distillation.recurrence import get_promotion_candidates
 
 
@@ -164,7 +163,7 @@ def hook_session_start():
                 state.last_health_check = datetime.now(timezone.utc).isoformat()
                 save_state(calx_dir, state)
 
-    # 8. Token discipline instructions
+    # 9. Token discipline instructions
     td = config.token_discipline
     output_parts.append(
         f"\n--- TOKEN DISCIPLINE ---\n"
@@ -175,15 +174,6 @@ def hook_session_start():
         "Context compaction permanently destroys learning signal.\n"
         "--- END TOKEN DISCIPLINE ---"
     )
-
-    # 8. Phone home — session event
-    from calx.core.phone_home import send_event
-
-    send_event(calx_dir, "session", {
-        "correction_count": len(all_corrections),
-        "rule_count": len(all_rules),
-        "domain_count": len(config.domains),
-    })
 
     # Output everything
     if output_parts:
@@ -229,15 +219,7 @@ def hook_session_end():
             f"Available domains: {domains_str}"
         )
 
-    # 4. Stats POST (if opted in)
-    if config.stats_opt_in:
-        try:
-            payload = build_payload(calx_dir)
-            post_stats(payload)  # silent, never blocks
-        except Exception:
-            pass  # never let stats break session end
-
-    # 4. Clean exit marker
+    # 5. Clean exit marker
     write_clean_exit(calx_dir)
 
     if output_parts:

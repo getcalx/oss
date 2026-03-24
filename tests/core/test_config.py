@@ -29,8 +29,6 @@ def test_save_and_load(tmp_path: Path):
         install_id="abc123",
         domains=["api", "tests"],
         agent_naming="developer",
-        stats_opt_in=True,
-        referral_source="paper",
     )
     save_config(calx_dir, config)
 
@@ -38,8 +36,6 @@ def test_save_and_load(tmp_path: Path):
     assert loaded.install_id == "abc123"
     assert loaded.domains == ["api", "tests"]
     assert loaded.agent_naming == "developer"
-    assert loaded.stats_opt_in is True
-    assert loaded.referral_source == "paper"
 
 
 def test_load_missing_file(tmp_path: Path):

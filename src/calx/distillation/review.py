@@ -41,9 +41,9 @@ def generate_review(calx_dir: Path, max_items: int = 10) -> ReviewDocument:
     items: list[ReviewItem] = []
 
     # 1. Find merge candidates (similar rules)
-    from calx.distillation.similarity import _extract_keywords
+    from calx.distillation.similarity import extract_keywords
 
-    rule_kws = [(r, _extract_keywords(f"{r.title} {r.body}")) for r in rules]
+    rule_kws = [(r, extract_keywords(f"{r.title} {r.body}")) for r in rules]
     seen_pairs: set[tuple[str, str]] = set()
 
     for i, (ra, kwa) in enumerate(rule_kws):

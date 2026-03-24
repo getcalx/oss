@@ -7,11 +7,11 @@ from click.testing import CliRunner
 from calx.cli.main import cli
 
 
-def test_init_non_interactive(tmp_path, monkeypatch):
-    """calx init --non-interactive creates .calx/ with defaults."""
+def test_init_creates_calx_dir(tmp_path, monkeypatch):
+    """calx init creates .calx/ with defaults."""
     monkeypatch.chdir(tmp_path)
     runner = CliRunner()
-    result = runner.invoke(cli, ["init", "--non-interactive"])
+    result = runner.invoke(cli, ["init"])
     assert result.exit_code == 0, result.output
     assert (tmp_path / ".calx" / "calx.json").exists()
 
@@ -20,7 +20,7 @@ def test_init_config_has_domains(tmp_path, monkeypatch):
     """Config file written with detected or default domains."""
     monkeypatch.chdir(tmp_path)
     runner = CliRunner()
-    result = runner.invoke(cli, ["init", "--non-interactive"])
+    result = runner.invoke(cli, ["init"])
     assert result.exit_code == 0, result.output
 
     config = json.loads((tmp_path / ".calx" / "calx.json").read_text())
@@ -33,7 +33,7 @@ def test_init_seed_rule_created(tmp_path, monkeypatch):
     """Seed rule file is created in .calx/rules/."""
     monkeypatch.chdir(tmp_path)
     runner = CliRunner()
-    result = runner.invoke(cli, ["init", "--non-interactive"])
+    result = runner.invoke(cli, ["init"])
     assert result.exit_code == 0, result.output
 
     rules_dir = tmp_path / ".calx" / "rules"
@@ -49,7 +49,7 @@ def test_init_readme_generated(tmp_path, monkeypatch):
     """README is generated inside .calx/."""
     monkeypatch.chdir(tmp_path)
     runner = CliRunner()
-    result = runner.invoke(cli, ["init", "--non-interactive"])
+    result = runner.invoke(cli, ["init"])
     assert result.exit_code == 0, result.output
 
     readme = tmp_path / ".calx" / "README"
@@ -63,7 +63,7 @@ def test_init_hooks_installed(tmp_path, monkeypatch):
     """Hooks are installed during init."""
     monkeypatch.chdir(tmp_path)
     runner = CliRunner()
-    result = runner.invoke(cli, ["init", "--non-interactive"])
+    result = runner.invoke(cli, ["init"])
     assert result.exit_code == 0, result.output
 
     assert "installed" in result.output
@@ -78,7 +78,7 @@ def test_init_claude_md_scaffold_created(tmp_path, monkeypatch):
     """CLAUDE.md scaffold is created when none exists."""
     monkeypatch.chdir(tmp_path)
     runner = CliRunner()
-    result = runner.invoke(cli, ["init", "--non-interactive"])
+    result = runner.invoke(cli, ["init"])
     assert result.exit_code == 0, result.output
 
     claude_md = tmp_path / "CLAUDE.md"
@@ -95,7 +95,7 @@ def test_init_claude_md_appends_calx_section(tmp_path, monkeypatch):
     (tmp_path / "CLAUDE.md").write_text(existing_content)
 
     runner = CliRunner()
-    result = runner.invoke(cli, ["init", "--non-interactive"])
+    result = runner.invoke(cli, ["init"])
     assert result.exit_code == 0, result.output
 
     claude_md = tmp_path / "CLAUDE.md"
@@ -114,7 +114,7 @@ def test_init_already_initialized(tmp_path, monkeypatch):
     (tmp_path / ".calx").mkdir()
 
     runner = CliRunner()
-    result = runner.invoke(cli, ["init", "--non-interactive"])
+    result = runner.invoke(cli, ["init"])
     assert result.exit_code == 0
     assert "already initialized" in result.output
 
@@ -123,7 +123,7 @@ def test_init_with_explicit_domains(tmp_path, monkeypatch):
     """Domains passed via --domains flag are used."""
     monkeypatch.chdir(tmp_path)
     runner = CliRunner()
-    result = runner.invoke(cli, ["init", "--non-interactive", "-d", "api", "-d", "web"])
+    result = runner.invoke(cli, ["init", "-d", "api", "-d", "web"])
     assert result.exit_code == 0, result.output
 
     config = json.loads((tmp_path / ".calx" / "calx.json").read_text())
@@ -137,7 +137,7 @@ def test_init_auto_detects_domains(tmp_path, monkeypatch):
     (tmp_path / "tests").mkdir()
 
     runner = CliRunner()
-    result = runner.invoke(cli, ["init", "--non-interactive"])
+    result = runner.invoke(cli, ["init"])
     assert result.exit_code == 0, result.output
 
     config = json.loads((tmp_path / ".calx" / "calx.json").read_text())
@@ -149,13 +149,12 @@ def test_init_directory_structure(tmp_path, monkeypatch):
     """Init creates the expected directory structure."""
     monkeypatch.chdir(tmp_path)
     runner = CliRunner()
-    result = runner.invoke(cli, ["init", "--non-interactive"])
+    result = runner.invoke(cli, ["init"])
     assert result.exit_code == 0, result.output
 
     assert (tmp_path / ".calx").is_dir()
     assert (tmp_path / ".calx" / "rules").is_dir()
     assert (tmp_path / ".calx" / "health").is_dir()
-    assert (tmp_path / ".calx" / "hooks").is_dir()
 
 
 def test_init_version_option():

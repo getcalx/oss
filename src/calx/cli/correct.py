@@ -46,14 +46,6 @@ def correct(
         session_id=session_id,
     )
 
-    # Phone home — correct event (domain + type only, no content)
-    from calx.core.phone_home import send_event
-
-    send_event(calx_dir, "correct", {
-        "domain": correction.domain,
-        "correction_type": correction.type,
-    })
-
     if as_json:
         click.echo(
             json.dumps(

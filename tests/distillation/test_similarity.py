@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from calx.core.corrections import CorrectionState
-from calx.distillation.similarity import _extract_keywords, find_most_similar
+from calx.distillation.similarity import extract_keywords, find_most_similar
 
 
 def _make_correction(cid: str, description: str, domain: str = "api") -> CorrectionState:
@@ -20,8 +20,8 @@ def _make_correction(cid: str, description: str, domain: str = "api") -> Correct
     )
 
 
-def test_extract_keywords_strips_stopwords():
-    result = _extract_keywords("the quick brown fox is a very fast animal")
+def testextract_keywords_strips_stopwords():
+    result = extract_keywords("the quick brown fox is a very fast animal")
     # "the", "is", "a", "very" are stopwords
     assert "the" not in result
     assert "is" not in result
@@ -33,8 +33,8 @@ def test_extract_keywords_strips_stopwords():
     assert "animal" in result
 
 
-def test_extract_keywords_strips_punctuation():
-    result = _extract_keywords("don't mock the database! use real connections.")
+def testextract_keywords_strips_punctuation():
+    result = extract_keywords("don't mock the database! use real connections.")
     assert "dont" in result
     assert "mock" in result
     assert "database" in result
@@ -45,8 +45,8 @@ def test_extract_keywords_strips_punctuation():
         assert word.isalnum()
 
 
-def test_extract_keywords_drops_single_char():
-    result = _extract_keywords("a b c hello world")
+def testextract_keywords_drops_single_char():
+    result = extract_keywords("a b c hello world")
     # "a" is a stopword, "b" and "c" are single-char
     assert "b" not in result
     assert "c" not in result

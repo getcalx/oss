@@ -38,9 +38,6 @@ calx = "calx.cli.main:cli"
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[tool.setuptools.package-data]
-calx = ["hooks/templates/*.sh"]
-
 [tool.ruff]
 target-version = "py310"
 line-length = 100

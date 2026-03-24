@@ -38,9 +38,7 @@ _DOMAIN_PATTERNS = {
 
 @click.command()
 @click.option("--domains", "-d", multiple=True, help="Domains to configure")
-@click.option("--non-interactive", is_flag=True, help="Skip prompts, use defaults")
-@click.option("--phone-home", is_flag=True, help="Enable anonymous usage tracking")
-def init(domains: tuple[str, ...], non_interactive: bool, phone_home: bool):
+def init(domains: tuple[str, ...]):
     """Initialize Calx in the current project."""
     project_dir = Path.cwd()
     calx_dir = project_dir / ".calx"
@@ -58,83 +56,19 @@ def init(domains: tuple[str, ...], non_interactive: bool, phone_home: bool):
         domain_list = [
             d.strip() for raw in domains for d in raw.split(",") if d.strip()
         ]
-    elif non_interactive:
+    else:
         domain_list = detected if detected else ["general"]
-    else:
-        if detected:
-            click.echo(f"Detected domains: {', '.join(detected)}")
-            confirmed = click.confirm("Use these domains?", default=True)
-            if confirmed:
-                domain_list = detected
-            else:
-                raw = click.prompt("Enter domains (comma-separated)", default="general")
-                domain_list = [d.strip() for d in raw.split(",") if d.strip()]
-        else:
-            raw = click.prompt("Enter domains (comma-separated)", default="general")
-            domain_list = [d.strip() for d in raw.split(",") if d.strip()]
-
-    # Agent naming
-    if non_interactive:
-        agent_naming = "self"
-    else:
-        click.echo("\nAgent naming preference:")
-        click.echo("  1. self — Agent names itself")
-        click.echo("  2. developer — You name the agent")
-        click.echo("  3. none — No naming")
-        choice = click.prompt("Choice", default="1", type=click.Choice(["1", "2", "3"]))
-        agent_naming = {"1": "self", "2": "developer", "3": "none"}[choice]
-
-    # Referral source
-    if non_interactive:
-        referral = ""
-    else:
-        click.echo("\nHow did you hear about Calx?")
-        click.echo("  1. paper  2. colleague  3. github  4. social  5. other")
-        ref_choice = click.prompt(
-            "Choice", default="5", type=click.Choice(["1", "2", "3", "4", "5"])
-        )
-        referral = {"1": "paper", "2": "colleague", "3": "github", "4": "social", "5": "other"}[
-            ref_choice
-        ]
-
-    # Claude plan → token discipline
-    plan_thresholds = {
-        "1": ("max", 200_000, 250_000, 1_000_000),
-        "2": ("pro", 80_000, 100_000, 200_000),
-        "3": ("team", 200_000, 250_000, 1_000_000),
-        "4": ("enterprise", 150_000, 200_000, 500_000),
-    }
-    if non_interactive:
-        # Default to Pro (conservative) — users can change via calx config
-        td_soft, td_ceil, td_window = 80_000, 100_000, 200_000
-    else:
-        click.echo("\nClaude plan:")
-        click.echo("  1. Max (1M context)")
-        click.echo("  2. Pro (200k context)")
-        click.echo("  3. Team (1M context)")
-        click.echo("  4. Enterprise")
-        plan_choice = click.prompt("Choice", default="1", type=click.Choice(["1", "2", "3", "4"]))
-        _, td_soft, td_ceil, td_window = plan_thresholds[plan_choice]
-
-    from calx.core.config import TokenDiscipline
-    token_discipline = TokenDiscipline(
-        soft_cap=td_soft, ceiling=td_ceil, model_context_window=td_window,
-    )
 
     # Build domain_paths from detected paths for the selected domains
     domain_paths = {d: detected_paths[d] for d in domain_list if d in detected_paths}
 
-    # Create config
-    config = default_config(domain_list, phone_home=phone_home, domain_paths=domain_paths)
-    config.token_discipline = token_discipline
-    config.agent_naming = agent_naming
-    config.referral_source = referral
+    # Create config with defaults
+    config = default_config(domain_list, domain_paths=domain_paths)
 
     # Create directory structure
     calx_dir.mkdir(parents=True, exist_ok=True)
     (calx_dir / "rules").mkdir(exist_ok=True)
     (calx_dir / "health").mkdir(exist_ok=True)
-    (calx_dir / "hooks").mkdir(exist_ok=True)
     (calx_dir / "method").mkdir(exist_ok=True)
 
     # Save config
@@ -146,8 +80,7 @@ def init(domains: tuple[str, ...], non_interactive: bool, phone_home: bool):
         "# Commit: calx.json, rules/, method/, README\n"
         "# Ignore: local state and event logs\n"
         "corrections.jsonl\n"
-        "health/\n"
-        "hooks/\n",
+        "health/\n",
         encoding="utf-8",
     )
 
@@ -205,17 +138,6 @@ def init(domains: tuple[str, ...], non_interactive: bool, phone_home: bool):
         calx_section = generate_calx_section(domain_list, config=config)
         claude_md.write_text(existing.rstrip() + "\n" + calx_section, encoding="utf-8")
         click.echo("Added Calx section to existing CLAUDE.md")
-
-    # Phone home — send install event
-    from calx.core.phone_home import send_event
-
-    send_event(calx_dir, "install")
-
-    if config.phone_home:
-        click.echo(
-            "Anonymous usage tracking enabled. "
-            "Disable with: calx config --set phone_home false"
-        )
 
     # Summary
     click.echo("\nCalx initialized!")

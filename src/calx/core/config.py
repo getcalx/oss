@@ -27,10 +27,6 @@ class CalxConfig:
     domain_paths: dict[str, str] = field(default_factory=dict)
     agent_naming: str = "self"  # "self" | "developer" | "none"
     token_discipline: TokenDiscipline = field(default_factory=TokenDiscipline)
-    stats_opt_in: bool = False
-    phone_home: bool = False
-    api_url: str = "https://calx.sh/api/v1/events"
-    referral_source: str = ""  # "paper" | "colleague" | "github" | "social" | "other"
     staleness_days: int = 30
     promotion_threshold: int = 3
     max_prompts_per_session: int = 3
@@ -65,10 +61,6 @@ def load_config(calx_dir: Path) -> CalxConfig:
         domain_paths=data.get("domain_paths", {}),
         agent_naming=data.get("agent_naming", "self"),
         token_discipline=td,
-        stats_opt_in=data.get("stats_opt_in", False),
-        phone_home=data.get("phone_home", True),
-        api_url=data.get("api_url", "https://calx.sh/api/v1/events"),
-        referral_source=data.get("referral_source", ""),
         staleness_days=data.get("staleness_days", 30),
         promotion_threshold=data.get("promotion_threshold", 3),
         max_prompts_per_session=data.get("max_prompts_per_session", 3),
@@ -88,7 +80,6 @@ def save_config(calx_dir: Path, config: CalxConfig) -> None:
 def default_config(
     domains: list[str],
     *,
-    phone_home: bool = False,
     domain_paths: dict[str, str] | None = None,
 ) -> CalxConfig:
     """Create a default configuration with the given domains."""
@@ -99,7 +90,6 @@ def default_config(
         anonymous_id=generate_uuid(),
         domains=domains,
         domain_paths=domain_paths or {},
-        phone_home=phone_home,
     )
 
 

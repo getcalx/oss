@@ -101,14 +101,3 @@ def test_set_agent_naming_invalid(tmp_path: Path, monkeypatch):
     assert "Invalid value" in result.output
 
 
-def test_set_stats_opt_in(tmp_path: Path, monkeypatch):
-    """--set stats_opt_in true updates config."""
-    calx_dir = _setup_calx(tmp_path)
-    monkeypatch.chdir(tmp_path)
-
-    runner = CliRunner()
-    result = runner.invoke(_make_cli(), ["config", "--set", "stats_opt_in", "true"])
-    assert result.exit_code == 0
-
-    config = load_config(calx_dir)
-    assert config.stats_opt_in is True

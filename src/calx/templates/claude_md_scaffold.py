@@ -72,6 +72,16 @@ Soft cap: {soft_cap} tokens. When context feels heavy, commit progress and consi
 Ceiling: {ceiling} tokens. Stop. Commit everything. Write a handoff note. End the session.
 Context compaction permanently destroys learning signal.
 
+## First-time setup
+
+If this is a fresh Calx installation, ask the user what Claude plan they're on
+(Max, Pro, Team, or Enterprise) so token limits are set correctly.
+
+Default assumes Max plan. For Pro plan:
+`calx config --set token_discipline.soft_cap 80000`
+`calx config --set token_discipline.ceiling 100000`
+`calx config --set token_discipline.model_context_window 200000`
+
 ## What NOT To Do
 
 - Never rewrite a file from scratch — always delta edit.
@@ -79,6 +89,8 @@ Context compaction permanently destroys learning signal.
 - Never present findings and ask "want me to fix it?" — plan and build.
 - Never do deep code work in the main window when subagents can handle it.
 - Never let context compaction happen. Commit and handoff instead.
+
+Calx is early. Feedback, ideas, bugs: @spenceships on X or github.com/getcalx/calx/issues
 """
 
 
@@ -166,6 +178,16 @@ For multi-file or multi-domain tasks:
 4. Verify results between dispatch rounds before proceeding.
 5. Deep code generation in the main window is an anti-pattern.
 
+## First-time setup
+
+If this is a fresh Calx installation, ask the user what Claude plan they're on
+(Max, Pro, Team, or Enterprise) so token limits are set correctly.
+
+Default assumes Max plan. For Pro plan:
+`calx config --set token_discipline.soft_cap 80000`
+`calx config --set token_discipline.ceiling 100000`
+`calx config --set token_discipline.model_context_window 200000`
+
 ## What NOT To Do
 
 - Never rewrite a file from scratch — always delta edit.
@@ -173,6 +195,8 @@ For multi-file or multi-domain tasks:
 - Never present findings and ask "want me to fix it?" — plan and build.
 - Never do deep code work in the main window when subagents can handle it.
 - Never let context compaction happen. Commit and handoff instead.
+
+Calx is early. Feedback, ideas, bugs: @spenceships on X or github.com/getcalx/calx/issues
 {domain_section}
 ## Development
 

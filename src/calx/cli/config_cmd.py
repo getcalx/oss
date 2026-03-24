@@ -29,8 +29,6 @@ def config_cmd(show: bool, key_value: tuple[str, str] | None):
         click.echo(f"  Promotion threshold: {config.promotion_threshold}")
         click.echo(f"  Max prompts/session: {config.max_prompts_per_session}")
         click.echo(f"  Staleness days: {config.staleness_days}")
-        click.echo(f"  Stats opt-in: {config.stats_opt_in}")
-        click.echo(f"  Phone home: {config.phone_home}")
         td = config.token_discipline
         click.echo(f"  Token soft cap: {td.soft_cap:,}")
         click.echo(f"  Token ceiling: {td.ceiling:,}")
@@ -59,10 +57,20 @@ def _set_config(calx_dir, config, key, value):
             click.echo("Invalid value. Must be: self, developer, none", err=True)
             return
         config.agent_naming = value
-    elif key == "stats_opt_in":
-        config.stats_opt_in = value.lower() in ("true", "1", "yes")
-    elif key == "phone_home":
-        config.phone_home = value.lower() in ("true", "1", "yes")
+    elif key.startswith("token_discipline."):
+        td_field = key.split(".", 1)[1]
+        if td_field not in ("soft_cap", "ceiling", "model_context_window"):
+            click.echo(f"Unknown token_discipline field: {td_field}", err=True)
+            return
+        try:
+            parsed = int(value)
+        except ValueError:
+            click.echo(f"Invalid value for {key}: must be an integer", err=True)
+            return
+        if parsed < 1:
+            click.echo(f"Invalid value for {key}: must be positive", err=True)
+            return
+        setattr(config.token_discipline, td_field, parsed)
     else:
         click.echo(f"Unknown config key: {key}", err=True)
         return

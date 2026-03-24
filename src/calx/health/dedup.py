@@ -16,9 +16,9 @@ class DuplicatePair:
 
 def find_duplicates(rules: list[Rule], threshold: float = 0.5) -> list[DuplicatePair]:
     """Find near-duplicate rules by Jaccard similarity on keywords."""
-    from calx.distillation.similarity import _extract_keywords
+    from calx.distillation.similarity import extract_keywords
 
-    rule_kws = [(r, _extract_keywords(f"{r.title} {r.body}")) for r in rules]
+    rule_kws = [(r, extract_keywords(f"{r.title} {r.body}")) for r in rules]
     pairs: list[DuplicatePair] = []
 
     for i, (ra, kwa) in enumerate(rule_kws):

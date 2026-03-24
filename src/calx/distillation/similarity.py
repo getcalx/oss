@@ -16,7 +16,7 @@ STOPWORDS: set[str] = {
 }
 
 
-def _extract_keywords(text: str) -> set[str]:
+def extract_keywords(text: str) -> set[str]:
     """Extract non-stopword lowercase tokens from text."""
     words = set()
     for word in text.lower().split():
@@ -36,13 +36,13 @@ def find_most_similar(
 
     Returns matches with similarity >= 0.3, sorted descending, limited to top_k.
     """
-    query_kw = _extract_keywords(description)
+    query_kw = extract_keywords(description)
     if not query_kw:
         return []
 
     scored: list[tuple[CorrectionState, float]] = []
     for corr in corrections:
-        corr_kw = _extract_keywords(corr.description)
+        corr_kw = extract_keywords(corr.description)
         if not corr_kw:
             continue
         intersection = query_kw & corr_kw
