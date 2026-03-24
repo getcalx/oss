@@ -22,7 +22,7 @@ pip install getcalx
 Then in your Claude Code session, run init directly:
 
 ```
-! calx init
+calx init
 ```
 
 This scaffolds `.calx/`, installs hooks, and adds Calx instructions to your CLAUDE.md.
