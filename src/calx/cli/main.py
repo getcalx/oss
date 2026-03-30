@@ -20,9 +20,9 @@ from calx.cli.dispatch_cmd import dispatch  # noqa: E402
 from calx.cli.distill import distill  # noqa: E402
 from calx.cli.health import health  # noqa: E402
 from calx.cli.init_cmd import init  # noqa: E402
+from calx.cli.serve_cmd import serve  # noqa: E402
 from calx.cli.stats import stats  # noqa: E402
 from calx.cli.status import status  # noqa: E402
-from calx.cli.serve_cmd import serve  # noqa: E402
 from calx.cli.sync_cmd import sync  # noqa: E402
 
 cli.add_command(init)

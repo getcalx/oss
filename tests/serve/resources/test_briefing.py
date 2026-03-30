@@ -1,6 +1,5 @@
 """Phase 4 -- briefing resource tests."""
 
-import pytest
 
 from calx.serve.resources.briefing import build_briefing
 

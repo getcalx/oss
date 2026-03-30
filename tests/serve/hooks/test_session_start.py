@@ -1,9 +1,6 @@
 """Tests for hooks/session_start.py."""
 
 import json
-from pathlib import Path
-
-import pytest
 
 
 def test_session_start_with_no_calx_dir(tmp_path, monkeypatch, capsys):

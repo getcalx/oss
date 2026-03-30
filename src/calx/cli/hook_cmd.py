@@ -131,6 +131,7 @@ def hook_session_start():
 
     # 7. Weekly review check
     from datetime import datetime, timezone
+
     from calx.core.state import load_state
 
     state = load_state(calx_dir)

@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 from calx.core.corrections import CorrectionState
-from calx.distillation.similarity import find_most_similar
 
 # extract_keywords is now re-exported from calx.serve.engine.similarity;
 # import it through the distillation module so the public surface is tested.
-from calx.distillation.similarity import extract_keywords
+from calx.distillation.similarity import extract_keywords, find_most_similar
 
 
 def _make_correction(cid: str, description: str, domain: str = "api") -> CorrectionState:

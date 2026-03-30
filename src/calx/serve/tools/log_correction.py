@@ -6,7 +6,7 @@ import time
 from collections import defaultdict
 
 from calx.serve.engine import correction_engine
-from calx.serve.engine.promotion import check_auto_promotion, PROMOTION_THRESHOLD
+from calx.serve.engine.promotion import PROMOTION_THRESHOLD, check_auto_promotion
 from calx.serve.engine.quarantine import quarantine_scan
 from calx.serve.engine.recurrence import check_recurrence
 
@@ -34,11 +34,14 @@ def _check_rate_limit(surface: str) -> bool:
 def _validate_enums(category: str, severity: str, confidence: str) -> str | None:
     """Validate enum fields. Returns error message or None."""
     if category not in VALID_CATEGORIES:
-        return f"Invalid category '{category}'. Must be one of: {', '.join(sorted(VALID_CATEGORIES))}"
+        opts = ", ".join(sorted(VALID_CATEGORIES))
+        return f"Invalid category '{category}'. Must be one of: {opts}"
     if severity not in VALID_SEVERITIES:
-        return f"Invalid severity '{severity}'. Must be one of: {', '.join(sorted(VALID_SEVERITIES))}"
+        opts = ", ".join(sorted(VALID_SEVERITIES))
+        return f"Invalid severity '{severity}'. Must be one of: {opts}"
     if confidence not in VALID_CONFIDENCES:
-        return f"Invalid confidence '{confidence}'. Must be one of: {', '.join(sorted(VALID_CONFIDENCES))}"
+        opts = ", ".join(sorted(VALID_CONFIDENCES))
+        return f"Invalid confidence '{confidence}'. Must be one of: {opts}"
     return None
 
 
@@ -57,7 +60,10 @@ async def handle_log_correction(
     if _check_rate_limit(surface):
         return {
             "status": "rate_limited",
-            "message": f"Rate limit exceeded for surface '{surface}'. Max {_RATE_LIMIT} corrections per minute.",
+            "message": (
+                f"Rate limit exceeded for surface '{surface}'. "
+                f"Max {_RATE_LIMIT} corrections per minute."
+            ),
         }
 
     # Validate enums
@@ -128,9 +134,11 @@ def register_log_correction_tool(mcp: object) -> None:
             domain: Routing domain (e.g., coordination, strategy, content, general).
             category: factual, tonal, structural, or procedural.
             severity: low, medium, or high.
-            confidence: low (never auto-promote), medium (queue for review), high (auto-promote after threshold).
-            surface: Which surface originated this (e.g., general, api, frontend, cli).
-            task_context: Optional description of the task during which this correction occurred.
+            confidence: low (never auto-promote), medium (review),
+                high (auto-promote after threshold).
+            surface: Which surface originated this
+                (e.g., general, api, frontend, cli).
+            task_context: Optional task description.
         """
         db = ctx.lifespan_context["db"]
         return await handle_log_correction(

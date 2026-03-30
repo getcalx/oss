@@ -2,8 +2,6 @@
 
 import json
 
-import pytest
-
 from calx.serve.config import ServerConfig
 from calx.serve.server import create_oss_server
 

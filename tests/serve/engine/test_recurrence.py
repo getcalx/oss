@@ -1,6 +1,7 @@
 """Tests for recurrence detection."""
 
 import pytest
+
 from tests.serve.conftest import make_correction
 
 

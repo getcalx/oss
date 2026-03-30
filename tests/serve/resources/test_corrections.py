@@ -1,6 +1,5 @@
 """Phase 4 -- corrections resource tests."""
 
-import pytest
 
 from calx.serve.resources.corrections import _get_corrections
 

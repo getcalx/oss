@@ -1,9 +1,6 @@
 """Tests for hooks/_common.py utilities."""
 
 import os
-from pathlib import Path
-
-import pytest
 
 
 def test_find_calx_dir_walks_up(tmp_path, monkeypatch):

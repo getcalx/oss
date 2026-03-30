@@ -11,8 +11,6 @@ from datetime import datetime, timezone
 import aiosqlite
 
 from calx.serve.db.engine import CorrectionRow, DatabaseEngine
-from calx.serve.engine.quarantine import quarantine_scan
-from calx.serve.engine.recurrence import check_recurrence
 from calx.serve.engine.similarity import extract_keywords
 
 MAX_ID_RETRIES = 3

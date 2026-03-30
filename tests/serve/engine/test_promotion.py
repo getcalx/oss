@@ -1,6 +1,7 @@
 """Tests for progressive promotion with confidence tiers."""
 
 import pytest
+
 from tests.serve.conftest import make_correction
 
 

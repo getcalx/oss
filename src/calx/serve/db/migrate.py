@@ -1,5 +1,6 @@
 """File-based .calx/ to SQLite migration and schema migration runner."""
 from __future__ import annotations
+
 import json
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -150,8 +151,6 @@ def _parse_rule_file(path: Path) -> list[dict]:
         body_lines = []
         for line in lines:
             if line.startswith("Source:") and "|" in line:
-                # Extract source correction IDs
-                source_part = line.split("|")[0].replace("Source:", "").strip()
                 continue
             body_lines.append(line)
 

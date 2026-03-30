@@ -7,9 +7,9 @@ import click
 
 from calx.core.config import find_calx_dir, load_config
 from calx.core.corrections import get_undistilled, materialize
-from calx.distillation.recurrence import get_promotion_candidates
 from calx.core.rules import read_all_rules
 from calx.core.state import check_clean_exit
+from calx.distillation.recurrence import get_promotion_candidates
 
 
 @click.command()

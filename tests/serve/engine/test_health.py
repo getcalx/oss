@@ -1,6 +1,7 @@
 """Tests for health-based rule auto-deactivation."""
 
 import pytest
+
 from tests.serve.conftest import make_rule
 
 

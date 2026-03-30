@@ -1,12 +1,11 @@
 """Phase 4 tests for log_correction tool handler."""
 
-import pytest
 
 from calx.serve.tools.log_correction import (
-    handle_log_correction,
+    _RATE_LIMIT,
     _check_rate_limit,
     _surface_timestamps,
-    _RATE_LIMIT,
+    handle_log_correction,
 )
 
 # Re-export conftest factories for local use

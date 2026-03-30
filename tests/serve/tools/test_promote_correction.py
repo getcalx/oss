@@ -1,6 +1,5 @@
 """Phase 4 tests for promote_correction tool handler."""
 
-import pytest
 
 from calx.serve.tools.promote_correction import handle_promote_correction
 

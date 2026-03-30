@@ -1,5 +1,6 @@
 """Database schema DDL and initialization."""
 from __future__ import annotations
+
 SCHEMA_VERSION = 2
 
 PRAGMA_WAL = "PRAGMA journal_mode=WAL"

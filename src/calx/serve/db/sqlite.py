@@ -1,5 +1,6 @@
 """SQLite implementation of the database engine."""
 from __future__ import annotations
+
 import asyncio
 import json
 from contextlib import asynccontextmanager
@@ -9,14 +10,18 @@ from typing import Any
 
 import aiosqlite
 
-BUSY_RETRIES = 3
-BUSY_DELAYS = [0.05, 0.1, 0.2]  # 50ms, 100ms, 200ms
-
 from calx.serve.db.engine import (
-    CorrectionRow, ContextRow, DecisionRow,
-    MetricRow, PipelineRow, RuleRow,
+    ContextRow,
+    CorrectionRow,
+    DecisionRow,
+    MetricRow,
+    PipelineRow,
+    RuleRow,
 )
 from calx.serve.db.schema import PRAGMA_WAL, SCHEMA_VERSION, TABLES_DDL
+
+BUSY_RETRIES = 3
+BUSY_DELAYS = [0.05, 0.1, 0.2]  # 50ms, 100ms, 200ms
 
 _CORRECTION_FIELDS = {f.name for f in dataclass_fields(CorrectionRow)}
 _RULE_FIELDS = {f.name for f in dataclass_fields(RuleRow)}
@@ -176,7 +181,8 @@ class SQLiteEngine:
             conditions.append("domain = ?")
             params.append(domain)
 
-        sql = f"SELECT * FROM corrections WHERE {' AND '.join(conditions)} ORDER BY created_at DESC LIMIT ?"
+        where = " AND ".join(conditions)
+        sql = f"SELECT * FROM corrections WHERE {where} ORDER BY created_at DESC LIMIT ?"
         params.append(limit)
 
         rows = await self._fetchall(sql, tuple(params))
@@ -462,7 +468,9 @@ class SQLiteEngine:
         response_status: str | None = None, latency_ms: float | None = None,
     ) -> None:
         params_json = json.dumps(params) if params else None
-        try:
+        import contextlib
+
+        with contextlib.suppress(Exception):
             await self._execute(
                 """INSERT INTO telemetry
                    (event_type, tool_or_resource, surface, params,
@@ -471,8 +479,6 @@ class SQLiteEngine:
                 (event_type, tool_or_resource, surface, params_json,
                  response_status, latency_ms),
             )
-        except Exception:
-            pass  # Fire-and-forget: telemetry failures never block operations
 
     # ------------------------------------------------------------------
     # Schema version

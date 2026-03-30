@@ -14,7 +14,6 @@ from calx.serve.db.engine import (
 )
 from calx.serve.engine.health import auto_deactivate_unhealthy_rules
 
-
 SURFACE_DOMAIN_MAP: dict[str, list[str]] = {
     "default": ["general"],
 }

@@ -1,11 +1,10 @@
 """Tests for SQLite database engine CRUD operations."""
 
-import asyncio
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 import pytest
-from tests.serve.conftest import make_correction, make_rule
 
+from tests.serve.conftest import make_correction, make_rule
 
 # ---------------------------------------------------------------------------
 # Corrections
@@ -270,7 +269,7 @@ async def test_execute_with_retry_succeeds_after_busy(db):
 
     sql = "UPDATE corrections SET recurrence_count = 1 WHERE id = 'nonexistent'"
     with patch.object(db._conn, "execute", side_effect=flaky_execute):
-        cursor = await db._execute_with_retry(sql)
+        await db._execute_with_retry(sql)
     # Should have retried twice, then succeeded on 3rd attempt
     assert call_count == 3
 
@@ -281,11 +280,13 @@ async def test_execute_with_retry_raises_after_max_retries(db):
     async def always_locked(sql, params=()):
         raise Exception("database is locked")
 
-    with patch.object(db._conn, "execute", side_effect=always_locked):
-        with pytest.raises(Exception, match="database is locked"):
-            await db._execute_with_retry(
-                "UPDATE corrections SET recurrence_count = 1 WHERE id = 'x'",
-            )
+    with (
+        patch.object(db._conn, "execute", side_effect=always_locked),
+        pytest.raises(Exception, match="database is locked"),
+    ):
+        await db._execute_with_retry(
+            "UPDATE corrections SET recurrence_count = 1 WHERE id = 'x'",
+        )
 
 
 @pytest.mark.asyncio
@@ -298,9 +299,11 @@ async def test_execute_with_retry_no_retry_on_other_errors(db):
         call_count += 1
         raise Exception("no such table: bogus")
 
-    with patch.object(db._conn, "execute", side_effect=bad_sql):
-        with pytest.raises(Exception, match="no such table"):
-            await db._execute_with_retry("SELECT * FROM bogus", ())
+    with (
+        patch.object(db._conn, "execute", side_effect=bad_sql),
+        pytest.raises(Exception, match="no such table"),
+    ):
+        await db._execute_with_retry("SELECT * FROM bogus", ())
     assert call_count == 1
 
 

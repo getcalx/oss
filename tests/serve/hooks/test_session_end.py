@@ -1,6 +1,5 @@
 """Tests for hooks/session_end.py."""
 
-import pytest
 
 
 def test_session_end_cleans_up_marker(tmp_path, monkeypatch):

@@ -1,6 +1,5 @@
 """Phase 4 -- rules resource tests."""
 
-import pytest
 
 from calx.serve.resources.rules import _get_rules
 

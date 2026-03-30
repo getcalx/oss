@@ -4,7 +4,8 @@ from __future__ import annotations
 import json
 import os
 import secrets
-from dataclasses import dataclass, field, fields as dataclass_fields
+from dataclasses import dataclass, field
+from dataclasses import fields as dataclass_fields
 from pathlib import Path
 
 
@@ -97,8 +98,8 @@ class ServerConfig:
         """Generate and persist an auth token if none is set."""
         if self.auth_token:
             return
+        import contextlib
+
         self.auth_token = secrets.token_urlsafe(32)
-        try:
+        with contextlib.suppress(OSError):
             _save_token(self.calx_dir, self.auth_token)
-        except OSError:
-            pass

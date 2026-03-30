@@ -3,13 +3,14 @@
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import AsyncGenerator
 
 import pytest
 import pytest_asyncio
 
-from calx.serve.db.engine import CorrectionRow, RuleRow, MetricRow, PipelineRow, DecisionRow, ContextRow
-
+from calx.serve.db.engine import (
+    CorrectionRow,
+    RuleRow,
+)
 
 # ---------------------------------------------------------------------------
 # Factories

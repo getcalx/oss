@@ -36,7 +36,7 @@ async def test_migrate_is_idempotent(db, calx_dir: Path):
     """Running migration twice does not duplicate records."""
     from calx.serve.db.migrate import migrate_from_files
 
-    result1 = await migrate_from_files(db, calx_dir)
+    await migrate_from_files(db, calx_dir)
     result2 = await migrate_from_files(db, calx_dir)
     assert result2.corrections_imported == 0
     assert result2.rules_imported == 0

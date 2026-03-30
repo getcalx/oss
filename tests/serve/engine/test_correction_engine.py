@@ -1,6 +1,5 @@
 """Tests for the shared correction lifecycle engine."""
 
-import pytest
 from calx.serve.engine.correction_engine import log_correction, log_quarantined_correction
 
 

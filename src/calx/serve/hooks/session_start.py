@@ -39,7 +39,7 @@ def _check_jsonl_integrity(calx_dir: Path) -> None:
         return
     try:
         with open(jsonl) as f:
-            for i, line in enumerate(f, 1):
+            for i, line in enumerate(f, 1):  # noqa: B007 (i used in except)
                 line = line.strip()
                 if line:
                     json.loads(line)

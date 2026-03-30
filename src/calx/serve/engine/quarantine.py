@@ -9,7 +9,6 @@ import re
 from dataclasses import dataclass
 from typing import Protocol
 
-
 QUARANTINE_PATTERNS = [
     # Shell injection
     re.compile(r'[;&|`$].*(?:rm|curl|wget|bash|sh|python|eval|exec)', re.IGNORECASE),

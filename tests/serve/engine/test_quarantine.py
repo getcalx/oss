@@ -7,7 +7,6 @@ from calx.serve.engine.quarantine import (
     quarantine_scan,
 )
 
-
 # -- Existing tests (convenience function) ------------------------------------
 
 
