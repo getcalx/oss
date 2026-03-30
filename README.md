@@ -26,8 +26,7 @@ calx serve
 # → Calx MCP server on 127.0.0.1:4195
 ```
 
-Requires Python 3.10+. macOS and Linux. Windows coming soon.
-Works with Claude Code today. Cursor, Copilot, and Windsurf support planned.
+Requires Python 3.10+. Works with anything MCP-compatible
 
 ## How it works
 
