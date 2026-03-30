@@ -12,3 +12,4 @@ venv/
 *.egg
 HANDOFF.md
 # .calx/ inner .gitignore handles local vs committed files
+server/

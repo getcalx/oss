@@ -4,20 +4,22 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "getcalx"
-version = "0.3.0"
-description = "Correction engineering for AI agents."
+version = "0.4.0"
+description = "Behavioral governance compiler for AI agents. Compile corrections into enforceable mechanisms over MCP."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
 authors = [
     {name = "Spencer Hardwick"}
 ]
+keywords = ["ai", "agents", "mcp", "behavioral-governance", "corrections"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Console",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
     "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
 ]
 dependencies = [
     "click>=8.1",
@@ -25,9 +27,14 @@ dependencies = [
 
 [project.optional-dependencies]
 llm = ["anthropic>=0.30"]
+serve = [
+    "fastmcp>=3.1",
+    "aiosqlite>=0.20",
+]
 dev = [
     "pytest>=8.0",
     "pytest-cov",
+    "pytest-asyncio>=0.23",
     "ruff>=0.4",
     "mypy>=1.10",
 ]
@@ -54,3 +61,4 @@ warn_unused_configs = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-v --tb=short"
+asyncio_mode = "auto"

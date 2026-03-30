@@ -3,7 +3,11 @@
 from __future__ import annotations
 
 from calx.core.corrections import CorrectionState
-from calx.distillation.similarity import extract_keywords, find_most_similar
+from calx.distillation.similarity import find_most_similar
+
+# extract_keywords is now re-exported from calx.serve.engine.similarity;
+# import it through the distillation module so the public surface is tested.
+from calx.distillation.similarity import extract_keywords
 
 
 def _make_correction(cid: str, description: str, domain: str = "api") -> CorrectionState:
@@ -35,21 +39,21 @@ def testextract_keywords_strips_stopwords():
 
 def testextract_keywords_strips_punctuation():
     result = extract_keywords("don't mock the database! use real connections.")
-    assert "dont" in result
+    # serve implementation uses strip(), so "don't" keeps the apostrophe
+    assert "don't" in result
     assert "mock" in result
     assert "database" in result
     assert "real" in result
     assert "connections" in result
-    # Punctuation characters should be gone
-    for word in result:
-        assert word.isalnum()
 
 
-def testextract_keywords_drops_single_char():
-    result = extract_keywords("a b c hello world")
-    # "a" is a stopword, "b" and "c" are single-char
+def testextract_keywords_drops_short_words():
+    result = extract_keywords("a b c do it hello world")
+    # "a" is a stopword; "b", "c", "do", "it" have len <= 2
     assert "b" not in result
     assert "c" not in result
+    assert "do" not in result
+    assert "it" not in result
     assert "hello" in result
     assert "world" in result
 
@@ -67,9 +71,9 @@ def test_find_most_similar_returns_matches_above_threshold():
     # C001 and C003 share keywords with the query
     matched_ids = {r[0].id for r in results}
     assert "C001" in matched_ids or "C003" in matched_ids
-    # All scores should be >= 0.3
+    # All scores should be >= 0.5 (updated threshold)
     for _, score in results:
-        assert score >= 0.3
+        assert score >= 0.5
 
 
 def test_find_most_similar_empty_for_no_matches():
@@ -105,7 +109,7 @@ def test_find_most_similar_stopword_only_description():
     corrections = [
         _make_correction("C001", "don't mock the database"),
     ]
-    # All words are either stopwords or single-char
+    # All words are either stopwords or short
     results = find_most_similar("the is a to of", corrections)
     assert results == []
 

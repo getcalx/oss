@@ -21,8 +21,8 @@ def test_check_recurrence_finds_match_same_domain(tmp_path: Path):
     calx_dir = tmp_path / ".calx"
     calx_dir.mkdir()
 
-    c1 = create_correction(calx_dir, domain="api", description="don't mock the database in tests")
-    c2 = create_correction(calx_dir, domain="api", description="stop mocking database in tests")
+    c1 = create_correction(calx_dir, domain="api", description="never mock database connections in integration tests")
+    c2 = create_correction(calx_dir, domain="api", description="stop mocking database connections in integration tests")
 
     result = check_recurrence(calx_dir, c2)
     assert result.is_recurrence is True
@@ -49,8 +49,8 @@ def test_check_recurrence_appends_event(tmp_path: Path):
     calx_dir = tmp_path / ".calx"
     calx_dir.mkdir()
 
-    c1 = create_correction(calx_dir, domain="api", description="don't mock database connections")
-    c2 = create_correction(calx_dir, domain="api", description="stop mocking database connections")
+    c1 = create_correction(calx_dir, domain="api", description="never mock database connections in integration tests")
+    c2 = create_correction(calx_dir, domain="api", description="avoid mock database connections in integration tests")
 
     events_before = read_events(calx_dir)
     result = check_recurrence(calx_dir, c2)
@@ -70,9 +70,9 @@ def test_check_recurrence_ignores_different_domain(tmp_path: Path):
     calx_dir = tmp_path / ".calx"
     calx_dir.mkdir()
 
-    create_correction(calx_dir, domain="api", description="don't mock database connections")
+    create_correction(calx_dir, domain="api", description="never mock database connections in integration tests")
     c2 = create_correction(
-        calx_dir, domain="tests", description="don't mock database connections"
+        calx_dir, domain="tests", description="never mock database connections in integration tests"
     )
 
     result = check_recurrence(calx_dir, c2)

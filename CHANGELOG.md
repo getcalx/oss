@@ -1,5 +1,53 @@
 # Changelog
 
+## 0.4.0 (2026-03-30)
+
+### MCP Server
+- **`calx serve` command** starts an MCP server (streamable-http or stdio transport)
+- 3 MCP resources: `calx://briefing/{surface}`, `calx://rules`, `calx://corrections`
+- 3 MCP tools: `log_correction`, `promote_correction`, `get_briefing`
+- SQLite backend with WAL mode, async via aiosqlite
+- File-based migration imports existing `.calx/` data into SQLite on first run
+
+### Positioning
+- "Behavioral governance compiler" -- compile corrections into enforceable mechanisms
+- HyperAgents complementary framing in README and evidence section
+
+### Safety and robustness
+- Auth token lazy generation (skip for stdio transport)
+- Atomic recurrence count increment (SQL-level, no lost updates)
+- Transaction boundaries on correction logging flow
+- Column name whitelist on update methods (prevents injection)
+- Retry-on-conflict for correction ID generation
+- SQLite BUSY retry with exponential backoff (50/100/200ms)
+- Per-surface rate limiting on log_correction (60/min)
+- Content quarantine via `QuarantineScanner` protocol (swappable, regex default)
+- Config field whitelist against dataclass fields
+- Double-promotion guard on promote_correction
+- SQL-level keyword filter for recurrence search (no more limit=100 cap)
+
+### Health
+- Auto-deactivation of rules at critical health (below 0.3)
+- Warning surfaced in briefing for rules below 0.5
+
+### Cleanup
+- Founder-specific state removed from OSS (surface map, empty briefing sections)
+- Unified similarity implementation (serve canonical, CLI imports from it)
+- Unclosed file handles fixed in hooks
+- Session start hook simplified (file-based only in v0.4.0)
+- Telemetry disclosure section in README
+- `docs/` folder: quickstart, mcp-reference, correction-workflow, hooks
+
+### Dependencies
+- `[serve]` optional extra: `fastmcp>=3.1`, `aiosqlite>=0.20`
+- `pytest-asyncio>=0.23` added to dev deps
+
+## 0.3.0 (2026-03-23)
+
+- Strip all telemetry and phone-home code
+- Non-interactive `calx init` (Claude can run it directly)
+- Audit fixes
+
 ## 0.2.4 (2026-03-23)
 
 - Status shows "not yet promoted" instead of confusing "pending distillation"
