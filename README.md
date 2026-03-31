@@ -2,10 +2,6 @@
 
 Your AI agent keeps making the same mistakes. Calx captures corrections, detects recurrence, and compiles them into rules and hooks that stick.
 
-```bash
-pip install getcalx
-```
-
 ## Quickstart
 
 ```bash
