@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "getcalx"
-version = "0.4.1"
+version = "0.4.2"
 description = "Behavioral governance compiler for AI agents. Compile corrections into enforceable mechanisms over MCP."
 readme = "README.md"
 license = "MIT"
@@ -44,6 +44,9 @@ calx = "calx.cli.main:cli"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+calx = ["hooks/templates/*.sh"]
 
 [tool.ruff]
 target-version = "py310"
