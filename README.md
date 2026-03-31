@@ -41,7 +41,7 @@ Each pass through this loop tightens the correction surface. Without interventio
 
 ## MCP Server
 
-`calx serve` exposes the correction lifecycle over [FastMCP](https://gofastmcp.com/getting-started/welcome) (Model Context Protocol). Any MCP-compatible client (Claude Code, Claude Desktop, custom agents) can read rules, log corrections, and fetch briefings.
+`calx serve` exposes the correction lifecycle over [FastMCP](https://gofastmcp.com/getting-started/welcome) (Model Context Protocol). Any MCP-compatible client (Claude Code, Claude Desktop, custom agents) can read rules, log corrections, and fetch briefings. This allows multiple agents and surfaces to operate from a single shared state.
 
 ```bash
 pip install getcalx[serve]
