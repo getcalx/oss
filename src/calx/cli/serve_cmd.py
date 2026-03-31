@@ -1,8 +1,9 @@
 """calx serve -- start the MCP server."""
 
-import sys
-
 import click
+
+from calx.serve.config import ServerConfig
+from calx.serve.server import create_oss_server
 
 
 @click.command()
@@ -16,17 +17,6 @@ import click
 )
 def serve(host: str, port: int, transport: str):
     """Start the Calx MCP server."""
-    try:
-        from calx.serve.config import ServerConfig
-        from calx.serve.server import create_oss_server
-    except ImportError:
-        click.echo(
-            "MCP server dependencies not installed.\n"
-            "Run: pip install getcalx[serve]",
-            err=True,
-        )
-        sys.exit(1)
-
     config = ServerConfig.from_env_and_file()
     config.host = host
     config.port = port

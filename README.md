@@ -9,24 +9,30 @@ pip install getcalx
 ## Quickstart
 
 ```bash
-# Initialize Calx in your project
+pip install getcalx
 calx init
+```
 
-# Log a correction (your agent can do this too)
+That's it. `calx init` registers an MCP server in `.claude/settings.json`. Claude Code starts it automatically via stdio. Corrections, rules, and briefings flow over [MCP](https://modelcontextprotocol.io) backed by local SQLite. Built on [FastMCP](https://gofastmcp.com/getting-started/welcome).
+
+```bash
+# Log a correction (your agent can do this too via the MCP log_correction tool)
 calx correct "don't mock the database in integration tests"
 # → Logged C014. Matches C007: "don't mock the database." (3rd occurrence — promotion eligible.)
 
 # Promote to a rule
 calx distill
-# → Promoted to tests-R003. Injected at every session start.
-
-# Start the MCP server (optional, for richer agent integration)
-pip install getcalx[serve]
-calx serve
-# → Calx MCP server on 127.0.0.1:4195
+# → Promoted to tests-R003. Available in every future briefing.
 ```
 
-Requires Python 3.10+. Works with anything MCP-compatible
+Not using Claude Code? Run `calx serve` and point your MCP client at it:
+
+```bash
+calx serve                          # streamable-http on 127.0.0.1:4195
+calx serve --transport stdio        # for Claude Desktop, Cursor, etc.
+```
+
+Requires Python 3.10+. Works with anything MCP-compatible.
 
 ## How it works
 
@@ -41,29 +47,21 @@ Each pass through this loop tightens the correction surface. Without interventio
 
 ## MCP Server
 
-`calx serve` exposes the correction lifecycle over [FastMCP](https://gofastmcp.com/getting-started/welcome) (Model Context Protocol). Any MCP-compatible client (Claude Code, Claude Desktop, custom agents) can read rules, log corrections, and fetch briefings. This allows multiple agents and surfaces to operate from a single shared state.
-
-```bash
-pip install getcalx[serve]
-calx serve
-# → Calx MCP server on 127.0.0.1:4195
-```
+Calx runs as an MCP server built on [FastMCP](https://gofastmcp.com/getting-started/welcome) with local SQLite storage. `calx init` registers it automatically for Claude Code. The server provides the correction lifecycle over [MCP](https://modelcontextprotocol.io): any MCP-compatible client can read rules, log corrections, and fetch briefings.
 
 **Resources:** `calx://briefing/{surface}`, `calx://rules`, `calx://corrections`
 **Tools:** `log_correction`, `promote_correction`, `get_briefing`
 
-Connect from Claude Code by adding to your MCP server config:
+For editors other than Claude Code, connect manually:
 
-```json
-{
-  "calx": {
-    "command": "calx",
-    "args": ["serve", "--transport", "stdio"]
-  }
-}
+```bash
+# Claude Desktop: add to claude_desktop_config.json
+calx serve --transport stdio
+
+# Any MCP client: connect to HTTP endpoint
+calx serve
+# → http://127.0.0.1:4195/mcp (auth token in .calx/server.json)
 ```
-
-Or connect any MCP client to `http://127.0.0.1:4195/mcp` with the auth token from `.calx/server.json`.
 
 Full reference: [docs/mcp-reference.md](docs/mcp-reference.md)
 

@@ -1,6 +1,6 @@
 # MCP Reference
 
-Complete reference for all calx MCP resources and tools.
+Complete reference for all Calx MCP resources and tools. The server is built on [FastMCP](https://gofastmcp.com/getting-started/welcome) with local SQLite storage via [aiosqlite](https://github.com/omnilib/aiosqlite).
 
 ---
 

@@ -1,41 +1,54 @@
 # Quickstart
 
-Install to running MCP server in 2 minutes.
+Install to running MCP server in 2 minutes. Built on [FastMCP](https://gofastmcp.com/getting-started/welcome) with local SQLite.
 
 ## Install
 
 ```bash
-pip install getcalx[serve]
+pip install getcalx
 ```
 
-## Initialize
+## Initialize (Claude Code)
 
 ```bash
 cd your-project
 calx init
 ```
 
-This creates `.calx/` with config, hooks, and an empty corrections log.
+This creates `.calx/` with config and an empty corrections log, then registers the Calx MCP server in `.claude/settings.json`. Claude Code starts the server automatically via stdio transport. No manual server management needed.
 
-## Start the server
-
-```bash
-calx serve
-```
-
-Default: `http://127.0.0.1:4195`, streamable-http transport. Override with `--host`, `--port`, or `--transport stdio`.
-
-An auth token is auto-generated and saved to `.calx/server.json` on first run.
+Done. Start a Claude Code session and Calx is running.
 
 ---
 
-## Connect: Claude Code
+## Connect: Other editors
 
-1. Start the server:
+For editors other than Claude Code, run the server manually.
+
+### Claude Desktop
+
+Add to `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "calx": {
+      "command": "calx",
+      "args": ["serve", "--transport", "stdio"]
+    }
+  }
+}
+```
+
+### Cursor, Windsurf, generic MCP clients
+
+Start the HTTP server:
 
 ```bash
 calx serve
 ```
+
+Default: `http://127.0.0.1:4195/mcp`, streamable-http transport. Auth token auto-generated and saved to `.calx/server.json` on first run.
 
 2. Get your auth token:
 

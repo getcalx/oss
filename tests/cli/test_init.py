@@ -59,19 +59,22 @@ def test_init_readme_generated(tmp_path, monkeypatch):
     assert "calx.json" in content
 
 
-def test_init_hooks_installed(tmp_path, monkeypatch):
-    """Hooks are installed during init."""
+def test_init_registers_mcp_server(tmp_path, monkeypatch):
+    """MCP server is registered in .claude/settings.json during init."""
     monkeypatch.chdir(tmp_path)
     runner = CliRunner()
     result = runner.invoke(cli, ["init"])
     assert result.exit_code == 0, result.output
 
-    assert "installed" in result.output
-    # .claude/settings.json should be created
+    assert "MCP server: registered" in result.output
     settings_path = tmp_path / ".claude" / "settings.json"
     assert settings_path.exists()
     settings = json.loads(settings_path.read_text())
-    assert "hooks" in settings
+    assert "mcpServers" in settings
+    assert "calx" in settings["mcpServers"]
+    calx_server = settings["mcpServers"]["calx"]
+    assert calx_server["command"] == "calx"
+    assert calx_server["args"] == ["serve", "--transport", "stdio"]
 
 
 def test_init_claude_md_scaffold_created(tmp_path, monkeypatch):

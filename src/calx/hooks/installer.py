@@ -13,6 +13,7 @@ class InstallResult:
     hooks_installed: list[str] = field(default_factory=list)
     hooks_skipped: list[str] = field(default_factory=list)
     settings_created: bool = False
+    server_registered: bool = False
 
 
 def _calx_hooks(project_dir: Path) -> dict:
@@ -104,6 +105,39 @@ def _copy_templates(project_dir: Path) -> None:
         if source.exists():
             shutil.copy2(source, dest)
             dest.chmod(0o755)  # Set executable
+
+
+def install_mcp_server(project_dir: Path) -> InstallResult:
+    """Register Calx MCP server in .claude/settings.json.
+
+    This is the default mode. Claude Code starts the server automatically
+    via stdio transport. The server provides corrections, rules, and
+    briefings over MCP using FastMCP + local SQLite.
+    """
+    result = InstallResult()
+
+    claude_dir = project_dir / ".claude"
+    claude_dir.mkdir(parents=True, exist_ok=True)
+    settings_path = claude_dir / "settings.json"
+
+    if settings_path.exists():
+        settings = _read_claude_settings(project_dir)
+    else:
+        settings = {}
+        result.settings_created = True
+
+    # Register MCP server
+    mcp_servers = settings.get("mcpServers", {})
+    if "calx" not in mcp_servers:
+        mcp_servers["calx"] = {
+            "command": "calx",
+            "args": ["serve", "--transport", "stdio"],
+        }
+        result.server_registered = True
+    settings["mcpServers"] = mcp_servers
+
+    _write_claude_settings(project_dir, settings)
+    return result
 
 
 def _read_claude_settings(project_dir: Path) -> dict:

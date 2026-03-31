@@ -10,7 +10,7 @@ import click
 from calx.core.agents_md import sync_agents_md
 from calx.core.config import default_config, save_config
 from calx.core.rules import Rule, write_rule
-from calx.hooks.installer import install_hooks
+from calx.hooks.installer import install_mcp_server
 from calx.templates.calx_readme import generate_calx_readme
 from calx.templates.claude_md_scaffold import (
     generate_calx_section,
@@ -119,8 +119,9 @@ def init(domains: tuple[str, ...]):
     for agents_path in agents_written:
         click.echo(f"  Wrote {agents_path.relative_to(project_dir)}")
 
-    # Install hooks
-    result = install_hooks(project_dir)
+    # Register MCP server in .claude/settings.json (default mode)
+    # Shell hooks remain available for manual configuration
+    result = install_mcp_server(project_dir)
 
     # CLAUDE.md: scaffold or append Calx section
     claude_md = project_dir / "CLAUDE.md"
@@ -142,11 +143,10 @@ def init(domains: tuple[str, ...]):
     # Summary
     click.echo("\nCalx initialized!")
     click.echo(f"  Domains: {', '.join(domain_list)}")
-    installed = len(result.hooks_installed)
-    skipped = len(result.hooks_skipped)
-    click.echo(f"  Hooks: {installed} installed, {skipped} skipped")
+    click.echo(f"  MCP server: {'registered' if result.server_registered else 'skipped'}")
     click.echo(f"  Seed rule: {seed_rule.id}")
-    click.echo("\nRun `calx status` to see your setup.")
+    click.echo("\nMCP server runs automatically via Claude Code.")
+    click.echo("For other editors: calx serve --transport stdio")
 
 
 def _detect_domains(project_dir: Path) -> tuple[list[str], dict[str, str]]:
