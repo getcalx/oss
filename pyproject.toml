@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "getcalx"
-version = "0.5.0"
+version = "0.5.1"
 description = "Behavioral governance compiler for AI agents. Compile corrections into enforceable mechanisms over MCP."
 readme = "README.md"
 license = "MIT"
@@ -23,7 +23,7 @@ classifiers = [
 ]
 dependencies = [
     "click>=8.1",
-    "fastmcp>=3.1",
+    "fastmcp>=3.1,<4",
     "aiosqlite>=0.20",
 ]
 

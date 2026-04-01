@@ -122,3 +122,20 @@ def test_no_future_annotations_in_fastmcp_files():
     assert not violations, (
         f"from __future__ import annotations found in FastMCP files (C006): {violations}"
     )
+
+
+def test_fastmcp_imports_resolve():
+    """Guard: verify all FastMCP imports we depend on still exist.
+
+    Catches API removals/renames across FastMCP upgrades before they
+    hit production. Pin is >=3.1,<4 but minor versions can still break.
+    """
+    from fastmcp import FastMCP  # noqa: F811
+    from fastmcp import Context
+    from fastmcp.server.lifespan import lifespan
+    from fastmcp.server.auth import StaticTokenVerifier
+
+    assert FastMCP is not None
+    assert Context is not None
+    assert lifespan is not None
+    assert StaticTokenVerifier is not None
