@@ -2,26 +2,18 @@
 # NOTE: Do NOT use 'from __future__ import annotations' here.
 # FastMCP 3.x needs runtime-evaluated type annotations to detect Context params.
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 from calx.serve.db.engine import (
-    ContextRow,
     CorrectionRow,
-    DecisionRow,
-    MetricRow,
-    PipelineRow,
+    HandoffRow,
     RuleRow,
 )
-from calx.serve.engine.health import auto_deactivate_unhealthy_rules
-
-SURFACE_DOMAIN_MAP: dict[str, list[str]] = {
-    "default": ["general"],
-}
+from calx.serve.engine.bootstrap import bootstrap_session
+from calx.serve.engine.compilation import get_compilation_stats, get_compilation_candidates
 
 
-def _seven_days_ago() -> str:
-    dt = datetime.now(timezone.utc) - timedelta(days=7)
-    return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+SURFACE_DOMAIN_MAP: dict[str, list[str]] = {}
 
 
 def _format_rules_section(rules: list[RuleRow]) -> str:
@@ -43,74 +35,118 @@ def _format_corrections_section(corrections: list[CorrectionRow]) -> str:
     return "\n".join(lines)
 
 
-def _format_traction_section(metrics: list[MetricRow]) -> str:
-    if not metrics:
-        return "## Traction\n\nNo metrics recorded."
-    lines = ["## Traction\n"]
-    for m in metrics:
-        # Suppress GitHub stars -- NEVER include
-        if "github_star" in m.name.lower() or "stars" in m.name.lower():
-            continue
-        lines.append(f"- **{m.name}**: {m.value}")
+def _format_handoff_section(handoff: HandoffRow | None) -> str:
+    """Format 'Since Last Session' section from latest handoff."""
+    if not handoff:
+        return "## Since Last Session\n\nNo prior session handoff."
+    lines = ["## Since Last Session\n"]
+    lines.append(f"**What changed:** {handoff.what_changed}")
+    if handoff.what_others_need:
+        lines.append(f"**What others need:** {handoff.what_others_need}")
+    if handoff.decisions_deferred:
+        lines.append(f"**Decisions deferred:** {handoff.decisions_deferred}")
+    if handoff.next_priorities:
+        lines.append(f"**Next priorities:** {handoff.next_priorities}")
     return "\n".join(lines)
 
 
-def _format_pipeline_section(pipeline: list[PipelineRow]) -> str:
-    if not pipeline:
-        return "## Pipeline\n\nNo pipeline entries."
-    lines = ["## Pipeline\n"]
-    for p in pipeline:
-        status = p.status or "unknown"
-        gate = f" | Gate: {p.gate}" if p.gate else ""
-        lines.append(f"- **{p.investor}**: {status}{gate}")
+def _format_compilation_stats_section(stats: dict) -> str:
+    """Format compilation statistics section."""
+    if stats.get("total_compilations", 0) == 0:
+        return "## Compilation Stats\n\nNo compilations yet."
+    lines = ["## Compilation Stats\n"]
+    lines.append(f"- Total: {stats['total_compilations']}")
+    lines.append(f"- Verified: {stats['verified']}")
+    lines.append(f"- In verification: {stats['in_verification']}")
+    lines.append(f"- Failed: {stats['failed']}")
+    if stats.get("success_rate") is not None:
+        lines.append(f"- Success rate: {stats['success_rate']:.0%}")
+    lines.append(f"- Architectural recurrence rate: {stats.get('architectural_recurrence_rate', 0):.1f}")
+    lines.append(f"- Process recurrence rate: {stats.get('process_recurrence_rate', 0):.1f}")
     return "\n".join(lines)
 
 
-def _format_decisions_section(decisions: list[DecisionRow]) -> str:
-    if not decisions:
-        return "## Recent Decisions\n\nNo recent decisions."
-    lines = ["## Recent Decisions\n"]
-    for d in decisions:
-        ctx = f" ({d.context})" if d.context else ""
-        lines.append(f"- {d.decision}{ctx}")
+def _format_orchestration_section(plan) -> str:
+    """Format orchestration protocol and plan state."""
+    import json
+    from calx.serve.engine.orchestration import compute_waves, get_next_dispatchable
+
+    if not plan:
+        return ""
+
+    lines = ["## Orchestration Protocol\n"]
+    lines.append("You are an orchestrator. Read the plan. Dispatch agents for implementation. "
+                 "Verify results. Commit. Do not write implementation code in this window.")
+    lines.append("Dispatch one task per agent. Each agent gets its own context window with its own rules.")
+    lines.append("")
+
+    chunks = json.loads(plan.chunks)
+    edges = json.loads(plan.dependency_edges)
+    waves = compute_waves(chunks, edges)
+
+    lines.append(f"**Plan:** {plan.task_description}")
+    lines.append(f"**Phase:** {plan.phase}")
+    lines.append(f"**Wave:** {plan.current_wave}/{len(waves)}")
+
+    done = sum(1 for c in chunks if c.get("status") == "done")
+    total = len(chunks)
+    lines.append(f"**Chunks:** {done}/{total} done")
+
+    # Blocked chunks
+    blocked = [c for c in chunks if c.get("status") == "blocked"]
+    if blocked:
+        lines.append("")
+        lines.append("### Blocked")
+        for c in blocked:
+            lines.append(f"- **{c['id']}**: {c.get('block_reason', 'unknown')}. Re-dispatch with `calx redispatch {c['id']}`.")
+
+    # Next dispatchable
+    next_disp = get_next_dispatchable(chunks, edges, plan.current_wave - 1)
+    if next_disp:
+        lines.append("")
+        lines.append("### Next Dispatchable")
+        for cid in next_disp:
+            chunk = next((c for c in chunks if c["id"] == cid), None)
+            desc = chunk.get("description", "") if chunk else ""
+            lines.append(f"- `calx dispatch {cid}`: {desc}")
+
+    # Phase guidance
+    from calx.serve.engine.orchestration import PHASE_ORDER
+    phase_idx = PHASE_ORDER.index(plan.phase)
+    if plan.phase == "spec":
+        lines.append("\n**Next:** Set spec_file on the plan to advance to test phase.")
+    elif plan.phase == "test":
+        lines.append("\n**Next:** Set test_files on the plan to advance to chunk phase.")
+    elif plan.phase == "chunk":
+        lines.append("\n**Next:** Define chunks with dependency graph to advance to plan phase.")
+    elif plan.phase == "plan":
+        lines.append("\n**Next:** Record a foil review (verdict: approve) to advance to build phase.")
+    elif plan.phase == "build":
+        if next_disp:
+            lines.append(f"\n**Next:** Dispatch {len(next_disp)} chunk(s).")
+        else:
+            lines.append("\n**Next:** All chunks in current wave dispatched. Complete them to advance to verify.")
+    elif plan.phase == "verify":
+        lines.append(f"\n**Next:** Run `calx verify {plan.current_wave}` to verify wave {plan.current_wave}.")
+    elif plan.phase == "commit":
+        lines.append("\n**Next:** Commit verified work.")
+
     return "\n".join(lines)
 
 
-def _format_context_section(context: list[ContextRow]) -> str:
-    if not context:
-        return "## Hot Context\n\nNo active context."
-    lines = ["## Hot Context\n"]
-    for c in context:
-        cat = f" [{c.category}]" if c.category else ""
-        lines.append(f"- **{c.key}**{cat}: {c.value}")
-    return "\n".join(lines)
-
-
-def _format_health_section(actions: list[dict]) -> str:
-    lines = ["## Rule Health\n"]
-    for a in actions:
-        if a["action"] == "deactivated":
-            lines.append(
-                f"- **{a['rule_id']}**: Auto-deactivated "
-                f"(health: {a['health_score']:.2f}). "
-                f"Reactivate with promote_correction."
-            )
-        elif a["action"] == "warning":
-            lines.append(
-                f"- **{a['rule_id']}**: Needs attention "
-                f"(health: {a['health_score']:.2f})."
-            )
+def _format_compilation_candidates_section(candidates: list[RuleRow]) -> str:
+    """Format compilation candidates section."""
+    if not candidates:
+        return "## Compilation Candidates\n\nNo compilation candidates."
+    lines = ["## Compilation Candidates\n"]
+    for r in candidates:
+        lines.append(f"- **{r.id}** ({r.domain}): {r.rule_text}")
     return "\n".join(lines)
 
 
 async def build_briefing(db: object, surface: str) -> str:
     """Build the full briefing for a surface."""
     sections = []
-
-    # Auto-deactivate unhealthy rules before building the briefing
-    health_actions = await auto_deactivate_unhealthy_rules(db)
-    if health_actions:
-        sections.append(_format_health_section(health_actions))
 
     # Active rules filtered by surface-relevant domains
     domains = SURFACE_DOMAIN_MAP.get(surface, ["general"])
@@ -122,22 +158,46 @@ async def build_briefing(db: object, surface: str) -> str:
     recent = await db.find_corrections(limit=20)  # type: ignore[attr-defined]
     sections.append(_format_corrections_section(recent))
 
-    # Only include sections that have data
-    metrics = await db.get_latest_metrics()  # type: ignore[attr-defined]
-    if metrics:
-        sections.append(_format_traction_section(metrics))
+    # Bootstrap data (handoff, dirty exit, health warnings)
+    bootstrap = await bootstrap_session(db)
 
-    pipeline = await db.get_pipeline()  # type: ignore[attr-defined]
-    if pipeline:
-        sections.append(_format_pipeline_section(pipeline[:5]))
+    # Since Last Session
+    sections.append(_format_handoff_section(bootstrap.last_handoff))
 
-    decisions = await db.get_decisions(since=_seven_days_ago())  # type: ignore[attr-defined]
-    if decisions:
-        sections.append(_format_decisions_section(decisions))
+    # Dirty exit warning
+    if bootstrap.dirty_exit:
+        sections.insert(0, f"## Dirty Exit Detected\n\nPrevious session ({bootstrap.dirty_session_id}) did not end cleanly.")
 
-    context = await db.get_context()  # type: ignore[attr-defined]
-    if context:
-        sections.append(_format_context_section(context))
+    # Health warnings
+    if bootstrap.rules_needing_attention:
+        lines = ["## Rules Needing Attention\n"]
+        for r in bootstrap.rules_needing_attention:
+            lines.append(f"- **{r.id}** ({r.health_status}, score={r.health_score:.1f}): {r.rule_text}")
+        sections.append("\n".join(lines))
+
+    # Compilation stats
+    stats = await get_compilation_stats(db)
+    sections.append(_format_compilation_stats_section(stats))
+
+    # Compilation candidates
+    candidates = await get_compilation_candidates(db)
+    sections.append(_format_compilation_candidates_section(candidates))
+
+    # Review status
+    from calx.serve.tools.record_foil_review import get_review_gaps
+    gaps = await get_review_gaps(db)
+    if gaps:
+        lines = ["## Review Status\n"]
+        for g in gaps:
+            last = f" (last review: {g['last_review_date']})" if g["last_review_date"] else " (never reviewed)"
+            lines.append(f"- **{g['domain']}**: {g['correction_count']} corrections{last}")
+        sections.append("\n".join(lines))
+
+    # Orchestration (plan state + protocol)
+    plan = await db.get_active_plan()
+    orchestration = _format_orchestration_section(plan)
+    if orchestration:
+        sections.append(orchestration)
 
     return "\n\n".join(sections)
 

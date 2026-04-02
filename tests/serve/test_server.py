@@ -15,11 +15,12 @@ def test_create_oss_server_returns_fastmcp():
     assert server.name == "calx"
 
 
-def test_create_oss_server_no_stashed_config():
-    """Config is passed via lifespan closure, not stashed on the server instance."""
+def test_create_oss_server_stashes_config():
+    """Config is stashed on the server instance for lifespan access."""
     config = ServerConfig(auth_token="test-token-123", transport="stdio")
     server = create_oss_server(config)
-    assert not hasattr(server, "_calx_config")
+    assert hasattr(server, "_calx_config")
+    assert server._calx_config is config
 
 
 def test_server_config_from_env(tmp_path, monkeypatch):

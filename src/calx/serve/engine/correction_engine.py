@@ -42,6 +42,7 @@ async def log_correction(
     briefing_state: str | None = None,
     recurrence_of: str | None = None,
     root_correction_id: str | None = None,
+    learning_mode: str = "unknown",
 ) -> str:
     """Create a new correction record. Returns the correction ID.
 
@@ -65,6 +66,7 @@ async def log_correction(
             keywords=keywords,
             recurrence_of=recurrence_of,
             root_correction_id=root_correction_id or recurrence_of,
+            learning_mode=learning_mode,
             created_at=_now(),
             updated_at=_now(),
         )

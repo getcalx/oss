@@ -1,52 +1,77 @@
 """Session start hook -- fires once at the beginning of each Claude Code session.
-1. Write session marker for orientation gate
-2. Inject rules from .calx/rules/ files
-3. Run JSONL integrity check
+
+1. Register session with server (POST /enforce/register-session)
+2. Mark session as oriented (POST /enforce/mark-oriented)
+3. Output briefing to stdout (injected into agent context)
+4. Fall back to file-based injection if server unreachable
 """
 from __future__ import annotations
 
 import json
-import os
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 
-from calx.serve.hooks._common import find_calx_dir, log_hook_error
+from calx.serve.hooks._common import (
+    find_calx_dir,
+    get_server_url,
+    log_hook_error,
+    server_is_running,
+)
 
 
-def _write_session_marker(calx_dir: Path) -> None:
-    """Write ppid:timestamp marker for session ID resolution."""
-    ppid = os.getppid()
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    (calx_dir / ".session_start").write_text(f"{ppid}:{now}")
+def _register_and_brief(server_url: str, surface: str = "claude-code") -> str | None:
+    """Register session with server and get briefing."""
+    try:
+        import urllib.request
+        body = json.dumps({"surface": surface}).encode()
+        req = urllib.request.Request(
+            f"{server_url}/enforce/register-session",
+            data=body,
+            method="POST",
+        )
+        req.add_header("Content-Type", "application/json")
+        resp = urllib.request.urlopen(req, timeout=5)
+        data = json.loads(resp.read())
+        session_id = data.get("session_id", "")
+
+        # Mark oriented immediately
+        if session_id:
+            mark_body = json.dumps({"session_id": session_id}).encode()
+            mark_req = urllib.request.Request(
+                f"{server_url}/enforce/mark-oriented",
+                data=mark_body,
+                method="POST",
+            )
+            mark_req.add_header("Content-Type", "application/json")
+            urllib.request.urlopen(mark_req, timeout=2)
+
+        return data.get("briefing")
+    except Exception:
+        return None
 
 
 def _inject_rules_from_files(calx_dir: Path) -> None:
-    """Fallback: inject rules from .calx/rules/*.md to stderr."""
+    """Fallback: inject rules from .calx/rules/*.md to stdout."""
     rules_dir = calx_dir / "rules"
     if not rules_dir.exists():
         return
     for rule_file in sorted(rules_dir.glob("*.md")):
         content = rule_file.read_text().strip()
         if content:
-            print(content, file=sys.stderr)
+            print(content)
 
 
-def _check_jsonl_integrity(calx_dir: Path) -> None:
-    """Verify corrections.jsonl is valid JSONL."""
-    jsonl = calx_dir / "corrections.jsonl"
-    if not jsonl.exists():
-        return
+def _get_fail_mode(calx_dir: Path) -> str:
+    """Read server_fail_mode from calx.json. Default: open."""
+    config_file = calx_dir / "calx.json"
+    if not config_file.exists():
+        return "open"
     try:
-        with open(jsonl) as f:
-            for i, line in enumerate(f, 1):  # noqa: B007 (i used in except)
-                line = line.strip()
-                if line:
-                    json.loads(line)
-    except json.JSONDecodeError as e:
-        log_hook_error(f"JSONL integrity error at line {i}: {e}")
-    except OSError as e:
-        log_hook_error(f"JSONL read error: {e}")
+        with open(config_file) as f:
+            data = json.load(f)
+        return data.get("enforcement", {}).get("server_fail_mode", "open")
+    except (json.JSONDecodeError, OSError):
+        return "open"
 
 
 def main() -> None:
@@ -55,11 +80,32 @@ def main() -> None:
         calx_dir = find_calx_dir()
         if not calx_dir:
             return
-        _write_session_marker(calx_dir)
-        # v0.4.0: file-based rule injection only.
-        # Server-based briefing fetch coming in v0.5.0.
-        _inject_rules_from_files(calx_dir)
-        _check_jsonl_integrity(calx_dir)
+
+        server_url = get_server_url(calx_dir)
+        if server_url and server_is_running(server_url):
+            briefing = _register_and_brief(server_url)
+            if briefing:
+                print(briefing)
+            else:
+                _inject_rules_from_files(calx_dir)
+        else:
+            fail_mode = _get_fail_mode(calx_dir)
+            if fail_mode == "open":
+                _inject_rules_from_files(calx_dir)
+                # Surface last handoff if available
+                handoff_file = calx_dir / "state" / "last-handoff.json"
+                if handoff_file.exists():
+                    try:
+                        data = json.loads(handoff_file.read_text())
+                        what_changed = data.get("what_changed", "")
+                        if what_changed:
+                            print(f"\n## Last Session Handoff\n\n{what_changed}")
+                    except (json.JSONDecodeError, OSError):
+                        pass
+                print("Calx: Server unreachable. Rules loaded from files.", file=sys.stderr)
+            else:
+                print("Calx: Server unreachable and server_fail_mode=closed.", file=sys.stderr)
+
     except Exception as e:
         log_hook_error(f"session_start: {e}")
 

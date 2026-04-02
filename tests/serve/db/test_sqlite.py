@@ -251,60 +251,16 @@ async def test_get_schema_version(db):
 
 
 # ---------------------------------------------------------------------------
-# SQLITE_BUSY retry
+# PRAGMA busy_timeout
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_execute_with_retry_succeeds_after_busy(db):
-    """Verify _execute_with_retry retries on 'database is locked' errors."""
-    call_count = 0
-    original_execute = db._conn.execute
-
-    async def flaky_execute(sql, params=()):
-        nonlocal call_count
-        call_count += 1
-        if call_count <= 2:
-            raise Exception("database is locked")
-        return await original_execute(sql, params)
-
-    sql = "UPDATE corrections SET recurrence_count = 1 WHERE id = 'nonexistent'"
-    with patch.object(db._conn, "execute", side_effect=flaky_execute):
-        await db._execute_with_retry(sql)
-    # Should have retried twice, then succeeded on 3rd attempt
-    assert call_count == 3
+async def test_busy_timeout_pragma_set(db):
+    """PRAGMA busy_timeout should be set to handle database locking."""
+    row = await db._fetchone("PRAGMA busy_timeout")
+    assert row[0] == 5000
 
 
-@pytest.mark.asyncio
-async def test_execute_with_retry_raises_after_max_retries(db):
-    """After exhausting retries, the error should propagate."""
-    async def always_locked(sql, params=()):
-        raise Exception("database is locked")
-
-    with (
-        patch.object(db._conn, "execute", side_effect=always_locked),
-        pytest.raises(Exception, match="database is locked"),
-    ):
-        await db._execute_with_retry(
-            "UPDATE corrections SET recurrence_count = 1 WHERE id = 'x'",
-        )
-
-
-@pytest.mark.asyncio
-async def test_execute_with_retry_no_retry_on_other_errors(db):
-    """Non-BUSY errors should not trigger retries."""
-    call_count = 0
-
-    async def bad_sql(sql, params=()):
-        nonlocal call_count
-        call_count += 1
-        raise Exception("no such table: bogus")
-
-    with (
-        patch.object(db._conn, "execute", side_effect=bad_sql),
-        pytest.raises(Exception, match="no such table"),
-    ):
-        await db._execute_with_retry("SELECT * FROM bogus", ())
-    assert call_count == 1
 
 
 # ---------------------------------------------------------------------------
@@ -332,10 +288,10 @@ async def test_find_corrections_by_keywords(db):
 
 
 @pytest.mark.asyncio
-async def test_find_corrections_by_keywords_empty_falls_back(db):
+async def test_find_corrections_by_keywords_empty_returns_empty(db):
     await db.insert_correction(make_correction(id="C001", uuid="u1"))
     results = await db.find_corrections_by_keywords(keywords=[], domain=None)
-    assert len(results) == 1
+    assert len(results) == 0
 
 
 @pytest.mark.asyncio

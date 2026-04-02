@@ -8,11 +8,14 @@ async def test_briefing_returns_core_sections(populated_db):
     result = await build_briefing(populated_db, "default")
     assert "## Active Rules" in result
     assert "## Recent Corrections" in result
-    # Empty data sections should be omitted
+    # OSS briefing omits founder-specific sections (traction, pipeline, decisions, context)
     assert "## Traction" not in result
     assert "## Pipeline" not in result
     assert "## Recent Decisions" not in result
     assert "## Hot Context" not in result
+    # OSS briefing includes enforcement sections
+    assert "## Since Last Session" in result
+    assert "## Compilation Stats" in result
 
 
 async def test_briefing_default_sees_general_only(populated_db):

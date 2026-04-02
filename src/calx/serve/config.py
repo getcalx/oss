@@ -52,6 +52,12 @@ class ServerConfig:
     otel_enabled: bool = True
     otel_endpoint: str = ""
     telemetry_retention_days: int = 90
+    # Enforcement config
+    server_fail_mode: str = "open"
+    collapse_fail_mode: str = "closed"
+    tokens_per_call: int = 1000
+    soft_cap: int = 200000
+    ceiling: int = 250000
 
     @classmethod
     def from_env_and_file(cls, calx_dir: Path | None = None) -> ServerConfig:
@@ -91,6 +97,27 @@ class ServerConfig:
                     setattr(config, field_name, int(env_val))
                 else:
                     setattr(config, field_name, env_val)
+
+        # Load enforcement config from calx.json
+        calx_json = config.calx_dir / "calx.json"
+        if calx_json.exists():
+            try:
+                with open(calx_json) as f:
+                    calx_data = json.load(f)
+                enforcement = calx_data.get("enforcement", {})
+                if "server_fail_mode" in enforcement:
+                    config.server_fail_mode = enforcement["server_fail_mode"]
+                if "collapse_fail_mode" in enforcement:
+                    config.collapse_fail_mode = enforcement["collapse_fail_mode"]
+                if "tokens_per_call" in enforcement:
+                    config.tokens_per_call = int(enforcement["tokens_per_call"])
+                td = calx_data.get("token_discipline", {})
+                if "soft_cap" in td:
+                    config.soft_cap = int(td["soft_cap"])
+                if "ceiling" in td:
+                    config.ceiling = int(td["ceiling"])
+            except (json.JSONDecodeError, OSError):
+                pass
 
         return config
 

@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "getcalx"
-version = "0.5.1"
-description = "Behavioral governance compiler for AI agents. Compile corrections into enforceable mechanisms over MCP."
+version = "0.6.0"
+description = "Behavioral governance for AI agents. Corrections become structural improvements to the agent's environment, enforced over MCP."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
@@ -25,6 +25,8 @@ dependencies = [
     "click>=8.1",
     "fastmcp>=3.1,<4",
     "aiosqlite>=0.20",
+    "starlette>=0.37",
+    "uvicorn>=0.29",
 ]
 
 [project.optional-dependencies]
@@ -44,7 +46,11 @@ calx = "calx.cli.main:cli"
 where = ["src"]
 
 [tool.setuptools.package-data]
-calx = ["hooks/templates/*.sh"]
+calx = [
+    "hooks/templates/*.sh",
+    "serve/foil_profiles/*.md",
+    "serve/db/migrations/*.sql",
+]
 
 [tool.ruff]
 target-version = "py310"

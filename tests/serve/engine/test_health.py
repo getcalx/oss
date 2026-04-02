@@ -65,19 +65,18 @@ async def test_healthy_rule_untouched(db):
 
 
 @pytest.mark.asyncio
-async def test_none_health_score_skipped(db):
-    """Rules with no health_score (None) are skipped entirely."""
+async def test_default_health_score_untouched(db):
+    """Rules with default health_score (1.0) are not flagged."""
     from calx.serve.engine.health import auto_deactivate_unhealthy_rules
 
     await db.insert_rule(make_rule(
-        id="general-R001", health_score=None,
+        id="general-R001",
     ))
 
     results = await auto_deactivate_unhealthy_rules(db)
 
     assert len(results) == 0
 
-    # Rule stays active
     rule = await db.get_rule("general-R001")
     assert rule.active == 1
 
@@ -90,7 +89,7 @@ async def test_mixed_health_scores(db):
     await db.insert_rule(make_rule(id="general-R001", health_score=0.1))
     await db.insert_rule(make_rule(id="general-R002", rule_text="r2", health_score=0.4))
     await db.insert_rule(make_rule(id="general-R003", rule_text="r3", health_score=0.9))
-    await db.insert_rule(make_rule(id="general-R004", rule_text="r4", health_score=None))
+    await db.insert_rule(make_rule(id="general-R004", rule_text="r4", health_score=1.0))
 
     results = await auto_deactivate_unhealthy_rules(db)
 

@@ -1,7 +1,9 @@
-"""File-based .calx/ to SQLite migration and schema migration runner."""
+"""File-based .calx/ to SQLite migration and SQL schema migration runner."""
 from __future__ import annotations
 
 import json
+import re
+import shutil
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -16,6 +18,121 @@ class MigrationResult:
     corrections_imported: int = 0
     rules_imported: int = 0
     migrated_at: str = ""
+
+
+# ---------------------------------------------------------------------------
+# SQL Schema Migration Runner
+# ---------------------------------------------------------------------------
+
+_MIGRATIONS_DIR = Path(__file__).parent / "migrations"
+
+
+async def _backup_db(db: "SQLiteEngine", version: int) -> str | None:
+    """Checkpoint WAL, then copy DB file. Returns backup path or None."""
+    if db._db_path == ":memory:":
+        return None
+    src = Path(db._db_path)
+    if not src.exists():
+        return None
+    assert db._conn is not None
+    await db._conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    dst = src.with_name(f"{src.name}.backup.v{version}.{ts}")
+    shutil.copy2(str(src), str(dst))
+    return str(dst)
+
+
+async def run_sql_migrations(
+    db: "SQLiteEngine", up_to: int | None = None,
+) -> str | None:
+    """Run numbered SQL migration files that haven't been applied yet.
+
+    Migration files are named NNN_description.sql (e.g., 002_sessions.sql).
+    Each file is executed individually with SAVEPOINT wrapping.
+    The schema_version table tracks which migrations have been applied.
+
+    Returns the backup file path if a backup was created, else None.
+    When up_to is set, stop after that version.
+    """
+    current_version = await db.get_schema_version()
+
+    # Find migration files, sorted by number
+    migration_files = sorted(
+        f for f in _MIGRATIONS_DIR.glob("*.sql")
+        if re.match(r"^\d{3}_", f.name)
+    )
+
+    # Determine which migrations are pending
+    pending = [
+        f for f in migration_files
+        if int(f.name[:3]) > current_version
+        and (up_to is None or int(f.name[:3]) <= up_to)
+    ]
+
+    # Backup before first pending migration (file-backed DBs only)
+    backup_path = None
+    if pending and current_version > 0:
+        backup_path = await _backup_db(db, current_version)
+
+    assert db._conn is not None
+    # Flush any pending operations before starting SAVEPOINTs
+    await db._conn.commit()
+
+    for mig_file in pending:
+        mig_version = int(mig_file.name[:3])
+
+        sql = mig_file.read_text()
+        sp_name = f"migration_{mig_version:03d}"
+        await db._conn.execute(f"SAVEPOINT {sp_name}")
+        try:
+            for statement in _split_sql(sql):
+                statement = statement.strip()
+                if not statement:
+                    continue
+                try:
+                    await db._conn.execute(statement)
+                except Exception as e:
+                    err_msg = str(e).lower()
+                    if "duplicate column" in err_msg or "already exists" in err_msg:
+                        continue
+                    raise
+            await db._conn.execute(f"RELEASE {sp_name}")
+            await db._conn.commit()
+            await db.set_schema_version(mig_version)
+        except Exception as e:
+            await db._conn.execute(f"ROLLBACK TO {sp_name}")
+            await db._conn.execute(f"RELEASE {sp_name}")
+            raise RuntimeError(
+                f"Migration {mig_file.name} failed: {e}"
+            ) from e
+
+    return backup_path
+
+
+def _split_sql(sql: str) -> list[str]:
+    """Split SQL text into individual statements, respecting comments and trigger bodies."""
+    statements = []
+    current: list[str] = []
+    depth = 0
+    for line in sql.split("\n"):
+        stripped = line.strip()
+        if stripped.startswith("--"):
+            continue
+        upper = stripped.upper()
+        if upper == "BEGIN":
+            depth += 1
+        current.append(line)
+        if stripped.endswith(";"):
+            if depth > 0 and upper.startswith("END"):
+                depth -= 1
+            if depth == 0:
+                statements.append("\n".join(current))
+                current = []
+    if current:
+        remaining = "\n".join(current).strip()
+        if remaining:
+            statements.append(remaining)
+    return statements
 
 
 def _extract_keywords_json(text: str) -> str:

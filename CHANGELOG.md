@@ -1,5 +1,103 @@
 # Changelog
 
+## 0.6.0 (2026-04-01)
+
+Breaking release. Schema v6, enforcement layer, compilation pipeline, orchestration infrastructure.
+
+### Reframe
+- Corrections are diagnostic signals for environmental modification, not rules to memorize
+- Docs, README, and framing updated to reflect: text rules fail, compiled mechanisms work
+- New `docs/concepts.md` explaining the behavioral plane, pair-specificity, and compilation
+
+### Enforcement Layer (new)
+- HTTP enforcement server on :4195 (Starlette/uvicorn) runs alongside MCP stdio
+- Composite transport: `calx serve` runs MCP over stdio + HTTP enforcement in one process
+- Session lifecycle: register_session, orientation gate, tool-call counting, collapse guard, end_session
+- Atomic state files in `.calx/state/` for fast hook reads without server round-trips
+- Consolidated `enforce.py` hook replaces `orientation_gate.py` + `collapse_guard.py`
+- Auto-init on first `calx serve`: creates `.calx/`, registers hooks, generates auth token
+
+### Compilation Pipeline (new)
+- `compile_rule` tool: mark a rule as compiled with mechanism type (code_change, config_change, hook_addition, architecture_change)
+- `CompilationEventRow` tracks compilation history with verification windows
+- Post-compilation recurrence monitoring (14-day verification)
+- Learning mode classification: architectural (permanent) vs process (needs reinforcement)
+- Compilation candidates surfaced in briefing
+- `calx compilations` CLI shows stats and candidates
+
+### Orchestration Infrastructure (new)
+- `create_plan` / `update_plan` / `dispatch_chunk` / `redispatch_chunk` / `verify_wave` tools
+- Kahn's algorithm for dependency-aware wave computation
+- Phase enforcement: spec -> test -> chunk -> plan -> build -> verify -> commit -> done
+- File-disjoint validation: parallel chunks sharing files flagged on plan creation
+- Chunk token budget estimation: oversized chunks flagged against session soft_cap
+- `calx plan` CLI with --status, --complete, --block, --advance, --verify
+- Orchestration protocol injection in briefing ("you are an orchestrator, not a builder")
+
+### Foil Review (new)
+- `record_foil_review` tool for adversarial cross-domain review records
+- 5 default foil profiles shipped: backend, design, frontend, security, spec
+- `calx review` CLI: --foil, --file, --record, --history, --gaps
+- Review gaps surfaced in briefing (domains with >5 corrections and no review in 14+ days)
+
+### Session Management (new)
+- `register_session` / `end_session` tools with handoff support
+- Session-end writes handoff (what_changed, what_others_need, decisions_deferred, next_priorities)
+- "Since last session" section in briefing from latest handoff
+- Dirty exit detection: previous session that didn't end cleanly
+- Staleness warnings when handoffs are older than 24 hours
+
+### Board State (new)
+- `update_board` tool for cross-agent coordination
+- `calx://board` MCP resource
+- `calx board` CLI shows items grouped by status
+
+### Health Scoring (expanded)
+- Full health scoring engine: recurrence, conflict, superseded, and age-based staleness decay
+- `score_all_rules()` runs at session end, persists scores to DB
+- `calx rules --health` shows scores, `--role ROLE` filters by role
+- Conflict detection before auto-promotion (prevents contradictory rules)
+- `deactivate_rule` tool with reason tracking
+
+### Telemetry (new)
+- Privacy-first anonymous telemetry: counts, booleans, environment info only
+- NEVER collects: correction text, rule text, file paths, project names
+- `calx telemetry --show` to audit, `--off` to disable permanently
+- Install ping (one-time) + session_end events (per-session)
+- Endpoint: Supabase Edge Function
+
+### Schema
+- Schema v6 (was v2). SQL migration runner with SAVEPOINT wrapping, backup before migration
+- Version guard: refuses to run if DB was created by a newer version
+- Schema validation: verifies live schema matches dataclass expectations after migration
+- New tables: sessions, handoffs, board_state, foil_reviews, compilation_events, plans
+- New fields on corrections: learning_mode
+- New fields on rules: learning_mode, health_status, last_validated_at, compiled_at, compiled_via, compiled_from_mode, recurrence_at_compilation, deactivation_reason, role
+
+### CLI (6 new commands)
+- `calx rules [--health] [--role ROLE]`
+- `calx board`
+- `calx promote [ID --text TEXT]`
+- `calx compilations`
+- `calx review [--foil NAME --file PATH | --record | --history | --gaps]`
+- `calx plan [--status | --complete ID | --block ID | --advance | --verify N]`
+
+### Dependencies
+- Added: starlette>=0.37, uvicorn>=0.29
+- Foil profiles and migration SQL files included in package data
+
+### Docs
+- README rewritten with new framing
+- New: docs/concepts.md (behavioral plane, pair-specificity, compilation)
+- New: docs/upgrading.md (migration guarantees, breaking changes)
+- Updated: correction-workflow, mcp-reference, hooks, quickstart
+
+## 0.5.1 (2026-03-30)
+
+- Single version source in __init__.py
+- FastMCP pin >=3.1,<4
+- Import guard for calx.serve
+
 ## 0.4.0 (2026-03-30)
 
 ### MCP Server

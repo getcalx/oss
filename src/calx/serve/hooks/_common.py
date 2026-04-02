@@ -1,4 +1,5 @@
 """Shared utilities for all hooks.
+
 find_calx_dir, get_session_id, log_hook_error.
 """
 from __future__ import annotations

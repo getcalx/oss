@@ -3,6 +3,7 @@
 # FastMCP 3.x needs runtime-evaluated type annotations to detect Context params.
 
 from calx.serve.db.engine import RuleRow
+from calx.serve.engine.conflict_detection import detect_conflicts
 
 
 async def handle_promote_correction(
@@ -21,6 +22,22 @@ async def handle_promote_correction(
     if correction.promoted:
         return {"status": "already_promoted", "message": "Correction already promoted."}
 
+    # Check for conflicts with existing rules
+    existing_rules = await db.find_rules(domain=correction.domain, active_only=True)  # type: ignore[attr-defined]
+    existing_texts = [r.rule_text for r in existing_rules]
+    conflicts = detect_conflicts(rule_text, existing_texts)
+    if conflicts:
+        return {
+            "status": "conflict",
+            "message": "Rule conflicts with existing rules.",
+            "conflicting_rules": [
+                {"id": r.id, "text": r.rule_text}
+                for r in existing_rules
+                if r.rule_text in conflicts
+            ],
+        }
+
+    learning_mode = getattr(correction, "learning_mode", "unknown") or "unknown"
     rule_id = await db.next_rule_id(correction.domain)  # type: ignore[attr-defined]
     await db.insert_rule(RuleRow(  # type: ignore[attr-defined]
         id=rule_id,
@@ -28,6 +45,7 @@ async def handle_promote_correction(
         domain=correction.domain,
         surface=correction.surface,
         source_correction_id=correction_id,
+        learning_mode=learning_mode,
         active=1,
     ))
     await db.update_correction(correction_id, promoted=1)  # type: ignore[attr-defined]

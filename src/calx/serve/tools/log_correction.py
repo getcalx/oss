@@ -54,6 +54,7 @@ async def handle_log_correction(
     confidence: str = "medium",
     surface: str = "unknown",
     task_context: str | None = None,
+    learning_mode: str = "unknown",
 ) -> dict:
     """Core handler for log_correction tool."""
     # Rate limit per surface
@@ -79,37 +80,32 @@ async def handle_log_correction(
             confidence, surface, task_context, qr.reason,
         )
 
-    # Wrap the full recurrence/insert/promotion flow in a transaction
-    async with db.transaction():  # type: ignore[attr-defined]
-        # Check recurrence
-        recurrence = await check_recurrence(db, correction, domain)
+    # Check recurrence
+    recurrence = await check_recurrence(db, correction, domain)
 
-        if recurrence.is_match:
-            # Atomically increment existing correction's recurrence count
-            new_count = await db.increment_recurrence_count(recurrence.original_id)  # type: ignore[attr-defined]
-            # Log the new correction linked to original
-            correction_id = await correction_engine.log_correction(
-                db, correction, domain, category, severity,
-                confidence, surface, task_context,
-                recurrence_of=recurrence.original_id,
-                root_correction_id=recurrence.original_id,
-            )
-            # Check progressive promotion
-            if new_count >= PROMOTION_THRESHOLD:
-                await check_auto_promotion(db, recurrence.original_id)
+    if recurrence.is_match:
+        new_count = await db.increment_recurrence_count(recurrence.original_id)  # type: ignore[attr-defined]
+        correction_id = await correction_engine.log_correction(
+            db, correction, domain, category, severity,
+            confidence, surface, task_context,
+            recurrence_of=recurrence.original_id,
+            root_correction_id=recurrence.original_id,
+        )
+        if new_count >= PROMOTION_THRESHOLD:
+            await check_auto_promotion(db, recurrence.original_id)
 
-            return {
-                "status": "recurrence",
-                "correction_id": correction_id,
-                "original_id": recurrence.original_id,
-                "count": new_count,
-            }
-        else:
-            correction_id = await correction_engine.log_correction(
-                db, correction, domain, category, severity,
-                confidence, surface, task_context,
-            )
-            return {"status": "ok", "correction_id": correction_id}
+        return {
+            "status": "recurrence",
+            "correction_id": correction_id,
+            "original_id": recurrence.original_id,
+            "count": new_count,
+        }
+    else:
+        correction_id = await correction_engine.log_correction(
+            db, correction, domain, category, severity,
+            confidence, surface, task_context,
+        )
+        return {"status": "ok", "correction_id": correction_id}
 
 
 def register_log_correction_tool(mcp: object) -> None:

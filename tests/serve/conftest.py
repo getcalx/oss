@@ -55,9 +55,13 @@ def make_rule(
 # ---------------------------------------------------------------------------
 
 @pytest_asyncio.fixture
-async def db():
-    """In-memory SQLite engine with schema applied."""
+async def db(monkeypatch):
+    """In-memory SQLite engine with schema + migrations applied."""
     from calx.serve.db.sqlite import SQLiteEngine
+    from calx.serve.engine import telemetry_sender
+
+    # Prevent tests from hitting the live Supabase endpoint
+    monkeypatch.setattr(telemetry_sender, "send_telemetry", lambda *a, **kw: None)
 
     engine = SQLiteEngine(db_path=":memory:")
     await engine.initialize()
