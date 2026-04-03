@@ -38,10 +38,10 @@ def hook_session_start():
     config = load_config(calx_dir)
     output_parts: list[str] = []
 
-    # 0b. Update check (cached, non-blocking)
+    # 0b. Auto-upgrade (cached, runs pip if newer version on PyPI)
     try:
-        from calx.core.update_check import check_for_update
-        update_msg = check_for_update(calx_dir)
+        from calx.core.update_check import auto_upgrade
+        update_msg = auto_upgrade(calx_dir)
         if update_msg:
             output_parts.append(update_msg)
     except Exception:
