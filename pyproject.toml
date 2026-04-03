@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "getcalx"
-version = "0.6.0"
+version = "0.7.0"
 description = "Behavioral governance for AI agents. Corrections become structural improvements to the agent's environment, enforced over MCP."
 readme = "README.md"
 license = "MIT"

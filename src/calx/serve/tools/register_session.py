@@ -13,7 +13,6 @@ from calx.serve.engine.state_writer import (
     write_session_state,
 )
 from calx.serve.engine.bootstrap import bootstrap_session
-from calx.serve.engine.compilation import check_verification_status
 from calx.serve.resources.briefing import build_briefing
 
 
@@ -43,7 +42,6 @@ async def handle_register_session(
 
     # Run bootstrap before creating session
     bootstrap = await bootstrap_session(db, state_dir=state_dir)
-    verification = await check_verification_status(db)
     bootstrap_data = {
         "dirty_exit": bootstrap.dirty_exit,
         "dirty_session_id": bootstrap.dirty_session_id,
@@ -57,10 +55,6 @@ async def handle_register_session(
         "rules_needing_attention": [
             {"id": r.id, "health_status": r.health_status, "health_score": r.health_score}
             for r in bootstrap.rules_needing_attention
-        ],
-        "verification_results": [
-            {"rule_id": v.rule_id, "status": v.status, "days_remaining": v.days_remaining}
-            for v in verification
         ],
     }
 

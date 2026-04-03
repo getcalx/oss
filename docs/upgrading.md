@@ -34,6 +34,14 @@ Your corrections, rules, recurrence chains, and quarantine records are preserved
 
 ---
 
+## Changes in v0.7.0
+
+v0.7.0 removes the compilation engine, learning mode classifier, and `compile_rule` MCP tool from the OSS package. The `calx compilations` CLI command is also removed. Compilation is now proprietary (available in Calx Pro).
+
+No migration needed. The compilation-related tables remain in the schema but are unused by the OSS package. No data is deleted.
+
+---
+
 ## Breaking changes in v0.6.0
 
 v0.6.0 introduces schema v6 with significant structural changes:

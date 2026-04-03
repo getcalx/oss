@@ -29,7 +29,7 @@ After `calx init`, corrections compound into rules automatically. The first few 
 
 ```
 .calx/
-  calx.db              # SQLite: corrections, rules, sessions, compilations
+  calx.db              # SQLite: corrections, rules, sessions
   calx.json            # Config: token discipline, domains, surfaces
   server.json          # MCP server config (host, port, auth)
   corrections.jsonl    # Append-only event log (backup/audit)
@@ -42,7 +42,7 @@ After `calx init`, corrections compound into rules automatically. The first few 
     coordination.md
 ```
 
-The database will contain your correction chains, promoted rules, compilation records, and session history. The rules directory contains markdown files generated from active rules for file-based injection when the MCP server is not running.
+The database will contain your correction chains, promoted rules, and session history. The rules directory contains markdown files generated from active rules for file-based injection when the MCP server is not running.
 
 ---
 
@@ -183,23 +183,6 @@ Response:
 
 The rule now appears in every future briefing.
 
-### 5. Compile the rule
-
-Promotion makes the rule visible. Compilation makes it structural. Tell Calx how the rule is now enforced:
-
-```json
-{
-  "tool": "compile_rule",
-  "args": {
-    "rule_id": "R001",
-    "mechanism_type": "hook_addition",
-    "mechanism_description": "PreToolUse hook rejects Edit calls with relative imports in calx.serve paths"
-  }
-}
-```
-
-The rule is now tracked as structurally enforced. It no longer depends on the agent remembering it.
-
 ---
 
 ## Key commands
@@ -221,4 +204,4 @@ Sessions 1-3: You log corrections manually. The briefing starts populating. Hook
 
 Sessions 4-7: Recurrence detection kicks in. High-confidence corrections auto-promote. The enforcement gate starts blocking edits until rules are read. The system is learning.
 
-Sessions 8+: The rule set reflects your actual patterns. Compilation events track which rules are structurally enforced. Health checks surface stale rules and governance gaps. The environment is doing the work, not the agent's memory.
+Sessions 8+: The rule set reflects your actual patterns. Health checks surface stale rules and governance gaps. The environment is doing the work, not the agent's memory.

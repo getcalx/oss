@@ -2,7 +2,7 @@
 
 Text rules fail. Telling an agent "don't do X" has a half-life measured in turns. Corrections are not rules to memorize. They are diagnostic signals for environmental modification.
 
-Full loop: capture, recurrence detection, promotion, compilation, rule injection, health monitoring.
+Full loop: capture, recurrence detection, promotion, rule injection, health monitoring.
 
 ---
 
@@ -130,51 +130,7 @@ Quarantined corrections cannot be promoted.
 
 ---
 
-## 6. Compilation
-
-Promotion makes a rule visible. Compilation makes it structural. This is where corrections stop being text and start modifying the agent's environment.
-
-A rule is "compiled" when it has been translated into a mechanism that enforces the behavior without relying on the agent remembering it. The correction is input; the environmental modification is output.
-
-**Compile a rule via MCP:**
-
-```json
-{
-  "tool": "compile_rule",
-  "args": {
-    "rule_id": "R001",
-    "mechanism_type": "hook_addition",
-    "mechanism_description": "PreToolUse hook rejects Edit calls with relative imports in calx.serve paths",
-    "mechanism_reference": ".calx/hooks/enforce.py:check_imports"
-  }
-}
-```
-
-**Mechanism types:**
-
-| Type | What it means | Example |
-|---|---|---|
-| `code_change` | The codebase was modified to make the error impossible | Replacing a manual step with an automated one |
-| `config_change` | Configuration enforces the constraint | Linter rule, CI check, `.editorconfig` |
-| `hook_addition` | A Calx hook gate now blocks the unwanted behavior | PreToolUse hook that rejects bad patterns |
-| `architecture_change` | The system structure eliminates the error class | Moving from manual imports to a module registry |
-
-**Compilation tracking:** Each compilation creates a `CompilationEventRow` linking the rule to its mechanism. This tracks what was compiled, when, how, and what type of enforcement was applied. Rules with compilation events are marked as structurally enforced in briefings.
-
-**Learning mode classification:**
-
-Not all corrections compile the same way. The learning mode determines persistence:
-
-| Mode | Persistence | Compilation target |
-|---|---|---|
-| `architectural` | Permanent. Eliminates the error class entirely. | Code changes, architecture changes, hook additions |
-| `process` | Needs reinforcement. ~50% persistence without structural support. | Config changes, briefing reminders |
-
-Architectural corrections are the goal. Every process-mode rule is a candidate for future architectural compilation. If an agent keeps needing the same reminder, the rule has not been compiled far enough.
-
----
-
-## 7. Rule injection
+## 6. Rule injection
 
 Rules reach agents through two mechanisms:
 
@@ -192,7 +148,7 @@ The serve hooks check for a running server first. If reachable, they fetch the b
 
 ---
 
-## 8. Health monitoring
+## 7. Health monitoring
 
 Rules accumulate. Calx tracks rule health to prevent drift.
 
@@ -208,7 +164,6 @@ Rules accumulate. Calx tracks rule health to prevent drift.
 | Conflict detection | Rules that contradict each other within or across domains. |
 | Coverage analysis | Domains with corrections but no rules (governance gaps). |
 | Deduplication | Rules with overlapping intent that should be merged. |
-| Compilation gaps | Promoted rules with no compilation event (text-only enforcement). |
 
 Run a health check:
 

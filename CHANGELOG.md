@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.0 (2026-04-02)
+
+- Removed compilation engine, learning mode classifier, and compile_rule tool from OSS package
+- Removed `calx compilations` CLI command
+- Compilation pipeline is now proprietary (available in Calx Pro)
+- Stripped compilation stats and candidates from briefing resource
+- 671 tests passing
+
 ## 0.6.0 (2026-04-01)
 
 Breaking release. Schema v6, enforcement layer, compilation pipeline, orchestration infrastructure.

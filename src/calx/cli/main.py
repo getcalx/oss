@@ -26,7 +26,6 @@ from calx.cli.status import status  # noqa: E402
 from calx.cli.sync_cmd import sync  # noqa: E402
 from calx.cli.telemetry_cmd import telemetry  # noqa: E402
 from calx.cli.board_cmd import board  # noqa: E402
-from calx.cli.compilations_cmd import compilations  # noqa: E402
 from calx.cli.plan_cmd import plan  # noqa: E402
 from calx.cli.promote_cmd import promote  # noqa: E402
 from calx.cli.review_cmd import review  # noqa: E402
@@ -44,7 +43,6 @@ cli.add_command(sync)
 cli.add_command(serve)
 cli.add_command(telemetry)
 cli.add_command(board)
-cli.add_command(compilations)
 cli.add_command(plan)
 cli.add_command(promote)
 cli.add_command(review)

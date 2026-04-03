@@ -72,7 +72,6 @@ Corrections form between a specific person and a specific agent. We transferred 
 | `calx serve` | Start the MCP server (`--host`, `--port`, `--transport`) |
 | `calx telemetry` | Manage anonymous usage telemetry (view status, opt in/out) |
 | `calx board` | Show the enforcement board grouped by status |
-| `calx compilations` | View compilation stats and candidates |
 | `calx plan` | View and manage the enforcement plan |
 | `calx promote` | Promote a correction to a rule, or list promotion candidates |
 | `calx review` | Manage foil reviews, review gaps, and review history |
@@ -124,7 +123,7 @@ mypy src/calx/            # type check
 ## Docs
 
 - [Quickstart](docs/quickstart.md): Install to running MCP server in 2 minutes
-- [Concepts](docs/concepts.md): The behavioral plane, compilation pipeline, and why corrections are pair-specific
+- [Concepts](docs/concepts.md): The behavioral plane and why corrections are pair-specific
 - [MCP Reference](docs/mcp-reference.md): Every resource and tool with parameters and examples
 - [Correction Workflow](docs/correction-workflow.md): Full capture-to-rule lifecycle
 - [Hooks](docs/hooks.md): What each hook does, how to configure and customize

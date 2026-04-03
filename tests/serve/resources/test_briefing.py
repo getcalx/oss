@@ -15,7 +15,6 @@ async def test_briefing_returns_core_sections(populated_db):
     assert "## Hot Context" not in result
     # OSS briefing includes enforcement sections
     assert "## Since Last Session" in result
-    assert "## Compilation Stats" in result
 
 
 async def test_briefing_default_sees_general_only(populated_db):

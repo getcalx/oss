@@ -36,19 +36,9 @@ Not all corrections age the same way.
 
 Calx tracks both and monitors recurrence to distinguish them. When a process correction recurs despite being promoted to a rule, that's a signal: it should become an architectural fix instead. The goal is to move corrections up the hierarchy from process reminders to structural enforcement.
 
-## The compilation pipeline
+## From corrections to rules
 
-Corrections are diagnostic signals, not rules to memorize. The pipeline:
-
-**Capture.** A correction is logged. Three layers ensure nothing is lost: explicit `calx correct` command, session-end prompt for uncommitted corrections, and dirty-exit recovery for crashes.
-
-**Recurrence detection.** Each new correction is matched against existing ones using keyword similarity. Calx tracks frequency, temporal patterns, and domain clustering. A correction that recurs 3+ times is a pattern, not an accident.
-
-**Compilation.** This is the step most tools skip. Compilation means analyzing the recurring correction and identifying what needs to change in the agent's environment so the error can't happen again. Not "add a rule that says don't do X." Instead: "what structural modification would make X impossible?"
-
-**Environmental modification.** The compiled mechanism is installed: a hook, a gate, a scoped rule with enforcement, a schema constraint. The agent's operating environment is different after compilation. The correction surface shrinks.
-
-The product is the compilation step. Capture is table stakes. Recurrence detection is pattern matching. But going from "this keeps happening" to "here's the structural change that prevents it" is where behavioral governance lives.
+Corrections feed into Calx's rule management system. Recurrence detection identifies patterns. Manual promotion (via `calx promote` or the promote_correction MCP tool) converts corrections into active rules.
 
 ## Token discipline
 

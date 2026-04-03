@@ -407,18 +407,6 @@ def create_enforcement_app(
             ]
         })
 
-    async def compilations(request: Request) -> JSONResponse:
-        from calx.serve.engine.compilation import get_compilation_stats, get_compilation_candidates
-        stats = await get_compilation_stats(db)
-        candidates = await get_compilation_candidates(db)
-        return JSONResponse({
-            "stats": stats,
-            "candidates": [
-                {"id": c.id, "domain": c.domain, "rule_text": c.rule_text, "learning_mode": c.learning_mode}
-                for c in candidates
-            ],
-        })
-
     async def promotion_candidates(request: Request) -> JSONResponse:
         corrections = await db.find_corrections(limit=1000)
         from calx.serve.engine.promotion import PROMOTION_THRESHOLD
@@ -630,7 +618,6 @@ def create_enforcement_app(
         Route("/enforce/end-session", end_session, methods=["POST"]),
         Route("/enforce/log-correction", log_correction, methods=["POST"]),
         Route("/enforce/rule-health", rule_health, methods=["GET"]),
-        Route("/enforce/compilations", compilations, methods=["GET"]),
         Route("/enforce/promotion-candidates", promotion_candidates, methods=["GET"]),
         Route("/enforce/promote", promote, methods=["POST"]),
         Route("/enforce/board", board, methods=["GET"]),

@@ -28,11 +28,9 @@ Full state bundle for a surface. Fetch at conversation start.
 | *(any other)* | general |
 
 **Returns:** Markdown string with sections:
-- Active Rules (filtered by surface domains, with compilation status)
+- Active Rules (filtered by surface domains)
 - Recent Corrections (last 20, all surfaces)
 - Since Last Session (corrections and rules added since this surface's last session end)
-- Compilation Stats (total rules, compiled count, uncompiled candidates)
-- Compilation Candidates (promoted rules without compilation events)
 - Review Status (pending foil reviews)
 - Orchestration Protocol (active plans, dispatched chunks, blocked items)
 - Traction (latest metrics)
@@ -219,30 +217,6 @@ Error (e.g. quarantined correction):
 {
   "status": "error",
   "message": "Cannot promote quarantined correction."
-}
-```
-
----
-
-### `compile_rule`
-
-Mark a rule as compiled into a structural enforcement mechanism. This is the step where a text rule becomes an environmental constraint.
-
-**Parameters:**
-
-| Param | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `rule_id` | string | yes | -- | The rule to compile (e.g. "R001"). |
-| `mechanism_type` | string | yes | -- | One of: `code_change`, `config_change`, `hook_addition`, `architecture_change`. |
-| `mechanism_description` | string | yes | -- | What was done to enforce this rule structurally. |
-| `mechanism_reference` | string | no | `null` | File path, config key, or other pointer to the enforcement mechanism. |
-
-**Returns:**
-
-```json
-{
-  "status": "ok",
-  "compilation_id": "CMP001"
 }
 ```
 

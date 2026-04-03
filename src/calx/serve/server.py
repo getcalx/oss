@@ -14,7 +14,6 @@ from calx.serve.db.sqlite import SQLiteEngine
 from calx.serve.resources.briefing import register_briefing_resource
 from calx.serve.resources.corrections import register_corrections_resource
 from calx.serve.resources.rules import register_rules_resource
-from calx.serve.tools.compile_rule import register_compile_rule_tool
 from calx.serve.tools.create_plan import register_create_plan_tool
 from calx.serve.tools.deactivate_rule import register_deactivate_rule_tool
 from calx.serve.tools.dispatch_chunk import register_dispatch_chunk_tool
@@ -81,7 +80,6 @@ def create_oss_server(config: ServerConfig) -> FastMCP:
     register_end_session_tool(mcp)
     register_deactivate_rule_tool(mcp)
     register_update_board_tool(mcp)
-    register_compile_rule_tool(mcp)
     register_create_plan_tool(mcp)
     register_update_plan_tool(mcp)
     register_dispatch_chunk_tool(mcp)

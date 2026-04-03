@@ -10,7 +10,6 @@ from calx.serve.db.engine import (
     RuleRow,
 )
 from calx.serve.engine.bootstrap import bootstrap_session
-from calx.serve.engine.compilation import get_compilation_stats, get_compilation_candidates
 
 
 SURFACE_DOMAIN_MAP: dict[str, list[str]] = {}
@@ -49,21 +48,6 @@ def _format_handoff_section(handoff: HandoffRow | None) -> str:
         lines.append(f"**Next priorities:** {handoff.next_priorities}")
     return "\n".join(lines)
 
-
-def _format_compilation_stats_section(stats: dict) -> str:
-    """Format compilation statistics section."""
-    if stats.get("total_compilations", 0) == 0:
-        return "## Compilation Stats\n\nNo compilations yet."
-    lines = ["## Compilation Stats\n"]
-    lines.append(f"- Total: {stats['total_compilations']}")
-    lines.append(f"- Verified: {stats['verified']}")
-    lines.append(f"- In verification: {stats['in_verification']}")
-    lines.append(f"- Failed: {stats['failed']}")
-    if stats.get("success_rate") is not None:
-        lines.append(f"- Success rate: {stats['success_rate']:.0%}")
-    lines.append(f"- Architectural recurrence rate: {stats.get('architectural_recurrence_rate', 0):.1f}")
-    lines.append(f"- Process recurrence rate: {stats.get('process_recurrence_rate', 0):.1f}")
-    return "\n".join(lines)
 
 
 def _format_orchestration_section(plan) -> str:
@@ -134,16 +118,6 @@ def _format_orchestration_section(plan) -> str:
     return "\n".join(lines)
 
 
-def _format_compilation_candidates_section(candidates: list[RuleRow]) -> str:
-    """Format compilation candidates section."""
-    if not candidates:
-        return "## Compilation Candidates\n\nNo compilation candidates."
-    lines = ["## Compilation Candidates\n"]
-    for r in candidates:
-        lines.append(f"- **{r.id}** ({r.domain}): {r.rule_text}")
-    return "\n".join(lines)
-
-
 async def build_briefing(db: object, surface: str) -> str:
     """Build the full briefing for a surface."""
     sections = []
@@ -174,14 +148,6 @@ async def build_briefing(db: object, surface: str) -> str:
         for r in bootstrap.rules_needing_attention:
             lines.append(f"- **{r.id}** ({r.health_status}, score={r.health_score:.1f}): {r.rule_text}")
         sections.append("\n".join(lines))
-
-    # Compilation stats
-    stats = await get_compilation_stats(db)
-    sections.append(_format_compilation_stats_section(stats))
-
-    # Compilation candidates
-    candidates = await get_compilation_candidates(db)
-    sections.append(_format_compilation_candidates_section(candidates))
 
     # Review status
     from calx.serve.tools.record_foil_review import get_review_gaps
