@@ -3,3 +3,9 @@
 corrections.jsonl
 health/
 hooks/
+state/
+server.json
+calx.db
+calx.db-wal
+calx.db-shm
+calx.lock
