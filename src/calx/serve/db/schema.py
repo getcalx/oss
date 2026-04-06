@@ -1,6 +1,6 @@
 """Database schema version and type mappings."""
 
-SCHEMA_VERSION = 6
+SCHEMA_VERSION = 7
 
 PRAGMA_WAL = "PRAGMA journal_mode=WAL"
 

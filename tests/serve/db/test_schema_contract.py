@@ -312,6 +312,48 @@ class TestUpgradePaths:
             await conn.close()
 
 
+class TestMigrationOrdering:
+    """Prove each migration is self-contained at its position in the chain."""
+
+    @pytest.mark.asyncio
+    async def test_no_forward_references(self):
+        """Each migration N succeeds on a DB that only has migrations 1..N-1 applied.
+
+        Catches the class of bug where migration N references columns or tables
+        created by a later migration. This is the structural guard for the 003/006
+        ordering bug (health_status indexed before it existed).
+        """
+        from calx.serve.db.migrate import _split_sql
+
+        files = _get_migration_files()
+        for mig_file in files:
+            mig_version = int(mig_file.name[:3])
+            conn = await aiosqlite.connect(":memory:")
+            await conn.execute("PRAGMA foreign_keys=ON")
+
+            # Replay 001..(N-1)
+            await _replay_migrations(conn, up_to=mig_version - 1)
+
+            # Now apply migration N alone
+            sql = mig_file.read_text()
+            for statement in _split_sql(sql):
+                statement = statement.strip()
+                if not statement:
+                    continue
+                try:
+                    await conn.execute(statement)
+                except Exception as e:
+                    err_msg = str(e).lower()
+                    if "duplicate column" in err_msg or "already exists" in err_msg:
+                        continue
+                    await conn.close()
+                    raise AssertionError(
+                        f"Migration {mig_file.name} has a forward reference: {e}"
+                    ) from e
+
+            await conn.close()
+
+
 class TestMigrationFileIntegrity:
     """Prove migration files are well-formed."""
 

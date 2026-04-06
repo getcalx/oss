@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.7.2 (2026-04-06)
+
+### Bugfix
+- Fixed migration ordering bug: 003 indexed columns (health_status, learning_mode) that don't exist until 006. Fresh installs failed with "no such column: health_status". Migration 003 is now a no-op; 006 creates the indexes.
+
+### Schema
+- Schema v7. Migration 007 rebuilds the rules table to enforce NOT NULL on health_score (legacy in-code DDL left it nullable).
+
+### Structural
+- New guard test: `TestMigrationOrdering.test_no_forward_references` replays each migration on a DB with only prior migrations applied. Catches forward-reference bugs at CI time.
+- New rule: `tests-R002` -- every migration must be self-contained at its position in the chain.
+
 ## 0.7.0 (2026-04-02)
 
 - Removed compilation engine, learning mode classifier, and compile_rule tool from OSS package

@@ -206,21 +206,18 @@ class TestMigration002:
 
 
 class TestMigration003:
-    """Migration 003: methodology indexes."""
+    """Migration 003: no-op (indexes moved to 006)."""
 
     @pytest.mark.asyncio
-    async def test_indexes_created(self, db):
-        """Migration 003 creates health/compilation indexes."""
-        # db fixture already runs all migrations.
-        # Verify indexes exist by checking sqlite_master.
+    async def test_no_op_migration(self, db):
+        """Migration 003 is a no-op; health indexes come from 006."""
         rows = await db._fetchall(
             "SELECT name FROM sqlite_master WHERE type='index' AND name LIKE 'idx_%'"
         )
         index_names = {r["name"] for r in rows}
+        # These indexes are created by migration 006, not 003.
         assert "idx_rules_health_status" in index_names
         assert "idx_rules_learning_mode" in index_names
-        assert "idx_compilation_events_verified" in index_names
-        assert "idx_compilation_events_rule_id" in index_names
 
     @pytest.mark.asyncio
     async def test_migration_003_idempotent(self, db):
