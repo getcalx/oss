@@ -5,40 +5,22 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "getcalx"
 dynamic = ["version"]
-description = "Behavioral infrastructure for agents. Your AI agents ignore you. Calx fixes that."
+description = "DEPRECATED: Calx has moved to a cloud-hosted model. Visit calx.sh for the new setup."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
 authors = [
     {name = "Spencer Hardwick"}
 ]
-keywords = ["ai", "agents", "mcp", "behavioral-governance", "corrections"]
+keywords = ["ai", "agents", "mcp", "behavioral-governance", "deprecated"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 7 - Inactive",
     "Environment :: Console",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
-    "Topic :: Software Development :: Quality Assurance",
-    "Topic :: Software Development :: Testing",
 ]
 dependencies = [
     "click>=8.1",
-    "fastmcp>=3.1,<4",
-    "aiosqlite>=0.20",
-    "starlette>=0.37",
-    "uvicorn>=0.29",
-]
-
-[project.optional-dependencies]
-llm = ["anthropic>=0.30"]
-dev = [
-    "pytest>=8.0",
-    "pytest-cov",
-    "pytest-asyncio>=0.23",
-    "ruff>=0.4",
-    "mypy>=1.10",
-    "build>=1.0",
-    "twine>=5.0",
 ]
 
 [project.scripts]
@@ -49,28 +31,3 @@ version = {attr = "calx.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
-[tool.setuptools.package-data]
-calx = [
-    "hooks/templates/*.sh",
-    "serve/foil_profiles/*.md",
-    "serve/db/migrations/*.sql",
-]
-
-[tool.ruff]
-target-version = "py310"
-line-length = 100
-
-[tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B", "SIM"]
-
-[tool.mypy]
-python_version = "3.10"
-strict = true
-warn_return_any = true
-warn_unused_configs = true
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "-v --tb=short"
-asyncio_mode = "auto"

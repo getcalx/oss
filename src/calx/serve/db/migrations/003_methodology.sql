@@ -1,4 +1,0 @@
--- 003_methodology.sql
--- No-op: indexes originally here referenced columns (health_status, learning_mode)
--- that do not exist until migration 006. Migration 006 creates them.
--- Retained as empty migration to preserve numbering.
